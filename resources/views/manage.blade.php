@@ -5,7 +5,7 @@
 @section('content')
     {{-- Alert Messages --}}
     @if (session('success'))
-        <div class="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-xl"
+        <div class="mb-6 p-4 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-xl"
             role="alert">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
@@ -20,7 +20,7 @@
     @endif
 
     @if (session('error'))
-        <div class="mb-6 p-4 bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl" role="alert">
+        <div class="mb-6 p-4 bg-linear-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl" role="alert">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center">
                     <i class="fa-solid fa-exclamation-triangle text-white"></i>
@@ -36,7 +36,7 @@
     {{-- Mobile Action Button --}}
     <div class="lg:hidden mb-4">
         <button id="mobile-form-toggle"
-            class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold py-3 px-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center space-x-2">
+            class="w-full bg-linear-to-r from-indigo-500 to-purple-500 text-white font-semibold py-3 px-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center space-x-2">
             <i class="fa-solid fa-plus"></i>
             <span>Kelola Barang</span>
         </button>
@@ -47,7 +47,7 @@
         <div class="w-full lg:w-2/3 order-2 lg:order-1">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
-                    <h1 class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                    <h1 class="text-2xl font-bold bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                         Daftar Barang</h1>
                     <div class="flex gap-4 mt-2 text-sm text-gray-500">
                         <span class="flex items-center space-x-1">
@@ -67,7 +67,7 @@
                     <div
                         class="bg-white rounded-2xl shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-300 border border-gray-100">
                         <div
-                            class="w-full aspect-square bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center relative">
+                            class="w-full aspect-square bg-linear-to-br from-indigo-50 to-purple-50 flex items-center justify-center relative">
                             @if ($product->image_path)
                                 <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}"
                                     class="w-full h-full object-cover">
@@ -111,14 +111,14 @@
                             <div class="space-y-2">
                                 <div class="flex gap-2">
                                     <button
-                                        class="edit-btn flex-1 bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 text-sm py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium border border-blue-100"
+                                        class="edit-btn flex-1 bg-linear-to-r from-blue-50 to-cyan-50 text-blue-700 text-sm py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium border border-blue-100"
                                         data-id="{{ $product->id }}" data-name="{{ $product->name }}"
                                         data-stock="{{ $product->stock }}"
                                         data-category="{{ $product->category }}">
                                         <i class="fa-solid fa-edit mr-1"></i>Edit
                                     </button>
                                     <button
-                                        class="restock-btn flex-1 bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-700 text-sm py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium border border-yellow-100"
+                                        class="restock-btn flex-1 bg-linear-to-r from-yellow-50 to-amber-50 text-yellow-700 text-sm py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium border border-yellow-100"
                                         data-id="{{ $product->id }}" data-name="{{ $product->name }}"
                                         data-price="{{ $product->price }}" data-stock="{{ $product->stock }}">
                                         <i class="fa-solid fa-plus-circle mr-1"></i>Restock
@@ -128,7 +128,7 @@
                                 {{-- QR Code Button --}}
                                 <div class="flex gap-2">
                                     <a href="{{ route('products.qr.show', $product->id) }}"
-                                        class="flex-1 bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 text-sm py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium border border-purple-100 text-center inline-block"
+                                        class="flex-1 bg-linear-to-r from-purple-50 to-pink-50 text-purple-700 text-sm py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium border border-purple-100 text-center inline-block"
                                         title="Lihat QR Code">
                                         <i class="fa-solid fa-qrcode mr-1"></i>Lihat QR
                                     </a>
@@ -200,10 +200,10 @@
                                 <label for="image_path_tambah"
                                     class="block text-sm font-medium text-gray-700 mb-2">Gambar</label>
                                 <input type="file" id="image_path_tambah" name="image_path" accept="image/*"
-                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-indigo-50 file:to-purple-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all" />
+                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-linear-to-r file:from-indigo-50 file:to-purple-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all" />
                             </div>
                             <button type="submit"
-                                class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all">
+                                class="w-full bg-linear-to-r from-indigo-500 to-purple-500 text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all">
                                 <i class="fa-solid fa-save mr-2"></i>Simpan Barang
                             </button>
                         </form>
@@ -229,7 +229,7 @@
                                 <input type="text" id="category_edit" name="category" class="input-field">
                             </div>
                             <button type="submit"
-                                class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all">
+                                class="w-full bg-linear-to-r from-blue-500 to-cyan-500 text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all">
                                 <i class="fa-solid fa-save mr-2"></i>Update Barang
                             </button>
                         </form>
@@ -261,7 +261,7 @@
                                     placeholder="Masukkan jumlah" min="1">
                             </div>
                             <button type="submit"
-                                class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all">
+                                class="w-full bg-linear-to-r from-yellow-500 to-amber-500 text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all">
                                 <i class="fa-solid fa-plus mr-2"></i>Tambah Stok
                             </button>
                         </form>
@@ -314,10 +314,10 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Gambar</label>
                                 <input type="file" name="image_path" accept="image/*"
-                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-indigo-50 file:to-purple-50 file:text-indigo-700" />
+                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-linear-to-r file:from-indigo-50 file:to-purple-50 file:text-indigo-700" />
                             </div>
                             <button type="submit"
-                                class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold py-3 rounded-xl">
+                                class="w-full bg-linear-to-r from-indigo-500 to-purple-500 text-white font-bold py-3 rounded-xl">
                                 <i class="fa-solid fa-save mr-2"></i>Simpan Barang
                             </button>
                         </form>
@@ -338,7 +338,7 @@
                                 <input type="text" id="mobile_category_edit" name="category" class="input-field">
                             </div>
                             <button type="submit"
-                                class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold py-3 rounded-xl">
+                                class="w-full bg-linear-to-r from-blue-500 to-cyan-500 text-white font-bold py-3 rounded-xl">
                                 <i class="fa-solid fa-save mr-2"></i>Update Barang
                             </button>
                         </form>
@@ -367,7 +367,7 @@
                                 </div>
                             </div>
                             <button type="submit"
-                                class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-bold py-3 rounded-xl">
+                                class="w-full bg-linear-to-r from-yellow-500 to-amber-500 text-white font-bold py-3 rounded-xl">
                                 <i class="fa-solid fa-plus mr-2"></i>Tambah Stok
                             </button>
                         </form>
@@ -537,7 +537,7 @@
             });
 
             setTimeout(function() {
-                const alerts = document.querySelectorAll('.bg-gradient-to-r');
+                const alerts = document.querySelectorAll('.bg-linear-to-r');
                 alerts.forEach(alert => {
                     if (alert.classList.contains('from-green-50') || alert.classList.contains(
                             'from-red-50')) {

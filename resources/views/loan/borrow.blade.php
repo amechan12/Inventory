@@ -5,7 +5,7 @@
 @section('content')
     {{-- Success/Error Messages --}}
     @if (session('success'))
-        <div class="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-xl" role="alert">
+        <div class="mb-6 p-4 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-xl" role="alert">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
                     <i class="fa-solid fa-check text-white"></i>
@@ -19,7 +19,7 @@
     @endif
 
     @if (session('error'))
-        <div class="mb-6 p-4 bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl" role="alert">
+        <div class="mb-6 p-4 bg-linear-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl" role="alert">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center">
                     <i class="fa-solid fa-exclamation-triangle text-white"></i>
@@ -34,13 +34,13 @@
 
     <div class="max-w-4xl mx-auto">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-            <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
                 <i class="fa-solid fa-box mr-3"></i>Pinjam Barang
             </h1>
 
             {{-- QR Scanner Section --}}
             <div class="mb-8">
-                <button id="qr-scanner-btn" class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-4 px-6 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-3">
+                <button id="qr-scanner-btn" class="w-full bg-linear-to-r from-blue-500 to-cyan-500 text-white font-semibold py-4 px-6 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-3">
                     <i class="fa-solid fa-qrcode text-2xl"></i>
                     <span class="text-lg">Scan QR Code Barang</span>
                 </button>
@@ -48,9 +48,9 @@
 
             {{-- Product Info Section --}}
             <div id="product-info" class="hidden mb-8">
-                <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
+                <div class="bg-linear-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
                     <div class="flex flex-col md:flex-row gap-6">
-                        <div id="product-image" class="flex-shrink-0">
+                        <div id="product-image" class="shrink-0">
                             <div class="w-32 h-32 rounded-xl bg-white flex items-center justify-center shadow-md">
                                 <i class="fa-solid fa-image text-4xl text-gray-300"></i>
                             </div>
@@ -98,7 +98,7 @@
                         <p class="mt-1 text-sm text-gray-500">Maksimal 500 karakter</p>
                     </div>
 
-                    <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-3">
+                    <button type="submit" class="w-full bg-linear-to-r from-indigo-500 to-purple-500 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-3">
                         <i class="fa-solid fa-paper-plane"></i>
                         <span>Ajukan Pinjam</span>
                     </button>
@@ -271,7 +271,7 @@
             function showNotification(message, type = 'success') {
                 const notification = document.createElement('div');
                 notification.className =
-                    `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg ${type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-red-500 to-rose-500'} text-white transform translate-x-full transition-transform duration-300`;
+                    `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg ${type === 'success' ? 'bg-linear-to-r from-green-500 to-emerald-500' : 'bg-linear-to-r from-red-500 to-rose-500'} text-white transform translate-x-full transition-transform duration-300`;
                 notification.innerHTML = `
                     <div class="flex items-center space-x-3">
                         <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} text-xl"></i>
@@ -290,7 +290,7 @@
 
             // Auto-hide alerts
             setTimeout(function() {
-                const alerts = document.querySelectorAll('.bg-gradient-to-r');
+                const alerts = document.querySelectorAll('.bg-linear-to-r');
                 alerts.forEach(alert => {
                     if (alert.classList.contains('from-green-50') || alert.classList.contains('from-red-50')) {
                         alert.style.transition = 'opacity 0.5s';

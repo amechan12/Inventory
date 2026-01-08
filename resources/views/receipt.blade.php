@@ -10,7 +10,7 @@
             Kembali ke Shop
         </a>
         
-        <button onclick="window.print()" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:shadow-lg transition-all">
+        <button onclick="window.print()" class="inline-flex items-center px-6 py-3 bg-linear-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:shadow-lg transition-all">
             <i class="fa-solid fa-print mr-2"></i>
             Print Nota
         </button>
@@ -20,7 +20,7 @@
     <div id="receipt-area" class="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
         {{-- Header --}}
         <div class="text-center border-b-2 border-dashed border-gray-300 pb-6 mb-6">
-            <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <h1 class="text-3xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
                 NOTA PEMBELIAN
             </h1>
             <p class="text-gray-600">Terima kasih atas pembelian Anda!</p>
@@ -39,7 +39,7 @@
         </div>
 
         {{-- Customer Info --}}
-        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 mb-6">
+        <div class="bg-linear-to-r from-indigo-50 to-purple-50 rounded-xl p-4 mb-6">
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <p class="text-sm text-gray-600">Kasir</p>
@@ -103,7 +103,7 @@
             </div>
             <div class="flex justify-between items-center pt-4 border-t border-dashed border-gray-300">
                 <span class="text-xl font-bold text-gray-800">TOTAL</span>
-                <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                <span class="text-2xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                     Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}
                 </span>
             </div>
@@ -119,12 +119,12 @@
 
     {{-- Action Buttons (Print Only) --}}
     <div class="mt-6 flex gap-4 print:hidden">
-        <button onclick="window.print()" class="flex-1 inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:shadow-lg transition-all font-semibold">
+        <button onclick="window.print()" class="flex-1 inline-flex items-center justify-center px-6 py-3 bg-linear-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:shadow-lg transition-all font-semibold">
             <i class="fa-solid fa-print mr-2"></i>
             Print Nota
         </button>
         
-        <button onclick="savePDF()" class="flex-1 inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:shadow-lg transition-all font-semibold">
+        <button onclick="savePDF()" class="flex-1 inline-flex items-center justify-center px-6 py-3 bg-linear-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:shadow-lg transition-all font-semibold">
             <i class="fa-solid fa-file-pdf mr-2"></i>
             Simpan sebagai PDF
         </button>
@@ -177,7 +177,7 @@
     }
     
     /* Ensure colors print */
-    .bg-gradient-to-r,
+    .bg-linear-to-r,
     .border-indigo-600,
     .border-purple-600 {
         -webkit-print-color-adjust: exact;

@@ -18,7 +18,7 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 animate-gradient min-h-screen flex items-center justify-center p-4">
+<body class="bg-linear-to-br from-indigo-100 via-purple-50 to-pink-100 animate-gradient min-h-screen flex items-center justify-center p-4">
 
     <div class="w-full max-w-md">
         <div class="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
@@ -27,7 +27,7 @@
                     <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden">
                     <img src="{{ asset('logo.png') }}" alt="Logo" class="w-full h-full object-contain">
                 </div>
-                <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                <h1 class="text-3xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
                     Enuma Vault
                 </h1>
                 <h2 class="text-xl font-semibold text-gray-800">Selamat Datang Kembali</h2>
@@ -79,7 +79,7 @@
                 {{-- Submit Button --}}
                 <div>
                     <button type="submit" 
-                            class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-base font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all">
+                            class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-base font-semibold text-white bg-linear-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all">
                         <i class="fa-solid fa-right-to-bracket mr-2"></i>
                         Masuk
                     </button>

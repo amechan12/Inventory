@@ -7,7 +7,7 @@
 
         {{-- Alert Messages --}}
         @if (session('success'))
-            <div class="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-xl">
+            <div class="mb-6 p-4 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-xl">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
                         <i class="fa-solid fa-check text-white"></i>
@@ -18,7 +18,7 @@
         @endif
 
         @if (session('error'))
-            <div class="mb-6 p-4 bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl">
+            <div class="mb-6 p-4 bg-linear-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center">
                         <i class="fa-solid fa-exclamation-triangle text-white"></i>
@@ -30,7 +30,7 @@
 
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">Riwayat Pinjaman</h1>
+                <h1 class="text-2xl font-bold bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">Riwayat Pinjaman</h1>
                 <p class="text-sm text-gray-500">Kelola dan export data pinjaman</p>
             </div>
             <div class="flex flex-col md:flex-row gap-3">
@@ -52,7 +52,7 @@
                     @endif
                 </form>
                 <button id="exportButton"
-                    class="flex items-center space-x-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all font-semibold">
+                    class="flex items-center space-x-2 bg-linear-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all font-semibold">
                     <i class="fa-solid fa-file-excel"></i>
                     <span>Export ke Excel</span>
                 </button>
@@ -62,7 +62,7 @@
         <div class="overflow-x-auto overflow-y-hidden rounded-xl border border-gray-100 w-full" style="-webkit-overflow-scrolling: touch; max-width:100vw; box-sizing:border-box;">
             <div class="w-full">
                 <table id="historyTable" class="min-w-max w-full text-sm text-left">
-                <thead class="text-xs uppercase bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-700">
+                <thead class="text-xs uppercase bg-linear-to-r from-indigo-50 to-purple-50 text-gray-700">
                     <tr>
                         <th scope="col" class="px-6 py-4 font-semibold">No. Pinjaman</th>
                         <th scope="col" class="px-6 py-4 font-semibold">Peminjam</th>
@@ -75,7 +75,7 @@
                 </thead>
                 <tbody>
                     @forelse ($transactions as $trx)
-                        <tr class="bg-white border-b hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-purple-50/50 transition-all">
+                        <tr class="bg-white border-b hover:bg-linear-to-r hover:from-indigo-50/50 hover:to-purple-50/50 transition-all">
                             <th scope="row" class="px-6 py-4 font-semibold text-indigo-600">
                                 {{ $trx->invoice_number }}
                             </th>
@@ -115,7 +115,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex gap-2">
-                                    <button class="detail-btn px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:shadow-md transition-all text-xs font-semibold"
+                                    <button class="detail-btn px-4 py-2 bg-linear-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:shadow-md transition-all text-xs font-semibold"
                                         data-transaction-id="{{ $trx->id }}">
                                         <i class="fa-solid fa-eye mr-1"></i>Detail
                                     </button>
@@ -124,7 +124,7 @@
                                         <form action="{{ route('history.destroy', $trx->id) }}" method="POST" class="inline delete-form">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="delete-btn px-4 py-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg hover:shadow-md transition-all text-xs font-semibold"
+                                            <button type="submit" class="delete-btn px-4 py-2 bg-linear-to-r from-red-500 to-rose-500 text-white rounded-lg hover:shadow-md transition-all text-xs font-semibold"
                                                 data-invoice="{{ $trx->invoice_number }}">
                                                 <i class="fa-solid fa-trash mr-1"></i>Hapus
                                             </button>
@@ -158,7 +158,7 @@
             <div class="mt-3">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h3 class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Detail Transaksi</h3>
+                        <h3 class="text-2xl font-bold bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Detail Transaksi</h3>
                         <p class="text-sm text-gray-500 mt-1">Informasi lengkap transaksi</p>
                     </div>
                     <button id="closeDetailModal" class="text-gray-400 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-100">
@@ -172,7 +172,7 @@
                 </div>
 
                 <div id="detailContent" class="hidden">
-                    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl mb-6 border border-indigo-100">
+                    <div class="bg-linear-to-r from-indigo-50 to-purple-50 p-6 rounded-xl mb-6 border border-indigo-100">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <div class="mb-4">
@@ -205,7 +205,7 @@
                         <h4 class="text-lg font-bold text-gray-800 mb-4">Daftar Produk</h4>
                         <div class="overflow-x-auto rounded-xl border border-gray-100">
                             <table class="w-full text-sm text-left">
-                                <thead class="text-xs uppercase bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-700">
+                                <thead class="text-xs uppercase bg-linear-to-r from-indigo-50 to-purple-50 text-gray-700">
                                     <tr>
                                         <th scope="col" class="px-4 py-3 font-semibold">Nama Produk</th>
                                         <th scope="col" class="px-4 py-3 font-semibold">Kategori</th>
@@ -228,7 +228,7 @@
 
                 <div class="mt-6 flex justify-end">
                     <button id="closeDetailModalBtn"
-                        class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all">
+                        class="px-6 py-3 bg-linear-to-r from-gray-500 to-gray-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all">
                         Tutup
                     </button>
                 </div>
@@ -253,11 +253,11 @@
                 </div>
                 <div class="items-center px-4 py-3 flex justify-center space-x-3">
                     <button id="cancelDelete"
-                        class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all">
+                        class="px-6 py-3 bg-linear-to-r from-gray-500 to-gray-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all">
                         Batal
                     </button>
                     <button id="confirmDelete"
-                        class="px-6 py-3 bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all">
+                        class="px-6 py-3 bg-linear-to-r from-red-500 to-rose-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all">
                         Hapus
                     </button>
                 </div>
@@ -329,7 +329,7 @@
                 productsList.innerHTML = '';
                 transaction.products.forEach(product => {
                     const row = document.createElement('tr');
-                    row.className = 'bg-white border-b hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-purple-50/50 transition-all';
+                    row.className = 'bg-white border-b hover:bg-linear-to-r hover:from-indigo-50/50 hover:to-purple-50/50 transition-all';
                     row.innerHTML = `
                         <td class="px-4 py-3 font-medium text-gray-900">${product.name}</td>
                         <td class="px-4 py-3 text-gray-600">${product.category}</td>
@@ -385,7 +385,7 @@
             });
 
             setTimeout(function() {
-                const alerts = document.querySelectorAll('.bg-gradient-to-r');
+                const alerts = document.querySelectorAll('.bg-linear-to-r');
                 alerts.forEach(alert => {
                     if (alert.classList.contains('from-green-50') || alert.classList.contains('from-red-50')) {
                         alert.style.transition = 'opacity 0.5s';
