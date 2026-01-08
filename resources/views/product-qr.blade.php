@@ -19,7 +19,7 @@
         </div>
 
         {{-- Product Details --}}
-        <div class="bg-linear-to-r from-indigo-50 to-purple-50 rounded-xl p-6 mb-8">
+        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 mb-8">
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <p class="text-sm text-gray-600 mb-1">Stok</p>
@@ -45,7 +45,7 @@
         {{-- Action Buttons --}}
         <div class="flex flex-col sm:flex-row gap-4 print:hidden">
             <button onclick="window.print()" 
-                    class="flex-1 inline-flex items-center justify-center px-6 py-3 bg-linear-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:shadow-lg transition-all font-semibold">
+                    class="flex-1 inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:shadow-lg transition-all font-semibold">
                 <i class="fa-solid fa-print mr-2"></i>
                 Print QR Code
             </button>

@@ -5,7 +5,7 @@
 @section('content')
     {{-- Success/Error Messages --}}
     @if (session('success'))
-        <div class="mb-6 p-4 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-xl" role="alert">
+        <div class="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-xl" role="alert">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
                     <i class="fa-solid fa-check text-white"></i>
@@ -19,7 +19,7 @@
     @endif
 
     @if (session('error'))
-        <div class="mb-6 p-4 bg-linear-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl" role="alert">
+        <div class="mb-6 p-4 bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl" role="alert">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center">
                     <i class="fa-solid fa-exclamation-triangle text-white"></i>
@@ -33,7 +33,7 @@
     @endif
 
     <div class="mb-6">
-        <h1 class="text-2xl md:text-3xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             <i class="fa-solid fa-clipboard-list mr-3"></i>Kelola Pinjaman
         </h1>
     </div>
@@ -129,14 +129,14 @@
                                 <form action="{{ route('admin.loans.approve', $loan->id) }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $loan->products->first()->id }}">
-                                    <button type="submit" class="w-full bg-linear-to-r from-green-500 to-emerald-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                                    <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-check"></i>
                                         <span>Approve</span>
                                     </button>
                                 </form>
                                 <form action="{{ route('admin.loans.reject', $loan->id) }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="w-full bg-linear-to-r from-red-500 to-rose-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2" onclick="return confirm('Yakin ingin menolak peminjaman ini?')">
+                                    <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2" onclick="return confirm('Yakin ingin menolak peminjaman ini?')">
                                         <i class="fa-solid fa-xmark"></i>
                                         <span>Tolak</span>
                                     </button>
@@ -209,7 +209,7 @@
                                             class="block w-full border border-gray-200 rounded-xl shadow-sm py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                             placeholder="Catatan tentang kondisi barang..."></textarea>
                                     </div>
-                                    <button type="submit" class="w-full bg-linear-to-r from-indigo-500 to-purple-500 text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                                    <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-check-circle"></i>
                                         <span>Konfirmasi Pengembalian</span>
                                     </button>
@@ -230,7 +230,7 @@
     <script>
         // Auto-hide alerts
         setTimeout(function() {
-            const alerts = document.querySelectorAll('.bg-linear-to-r');
+            const alerts = document.querySelectorAll('.bg-gradient-to-r');
             alerts.forEach(alert => {
                 if (alert.classList.contains('from-green-50') || alert.classList.contains('from-red-50')) {
                     alert.style.transition = 'opacity 0.5s';

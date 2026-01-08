@@ -84,7 +84,7 @@
     </style>
 </head>
 
-<body class="bg-linear-to-br from-gray-50 to-indigo-50/30 min-h-screen">
+<body class="bg-gradient-to-br from-gray-50 to-indigo-50/30 min-h-screen">
 
     <!-- Top Navigation Bar -->
     <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
@@ -102,7 +102,7 @@
                         </div>
                         <div>
                             <h1
-                                class="text-xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                                 Enuma Vault
                             </h1>
                             <p class="text-xs text-gray-500">Inventory System</p>

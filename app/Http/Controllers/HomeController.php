@@ -110,6 +110,40 @@ class HomeController extends Controller
             $topProductData = [0, 0, 0, 0, 0];
         }
 
+        // Jika user adalah anggota, kembalikan dashboard anggota yang lebih sederhana
+        if (auth()->user()->role == 'anggota') {
+            $user = auth()->user();
+
+            $activeLoans = Transaction::where('user_id', $user->id)
+                ->where('status', 'borrowed')
+                ->count();
+
+            $pendingLoans = Transaction::where('user_id', $user->id)
+                ->where('status', 'pending')
+                ->count();
+
+            $dueSoonLoans = Transaction::where('user_id', $user->id)
+                ->where('status', 'borrowed')
+                ->whereBetween('return_date', [Carbon::now()->toDateString(), Carbon::now()->addDays(3)->toDateString()])
+                ->count();
+
+            $currentLoans = Transaction::where('user_id', $user->id)
+                ->whereIn('status', ['pending', 'borrowed', 'returning', 'returned'])
+                ->with('products')
+                ->orderByDesc('created_at')
+                ->limit(5)
+                ->get();
+
+            return view('member.home', compact(
+                'activeLoans',
+                'pendingLoans',
+                'dueSoonLoans',
+                'currentLoans',
+                'topProductLabels',
+                'topProductData'
+            ));
+        }
+
         // Untuk backward compatibility dengan view lama (jika masih ada)
         $labels = $dailyLabels;
         $data = $dailyData;

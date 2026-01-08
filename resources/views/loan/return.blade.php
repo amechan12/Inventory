@@ -5,7 +5,7 @@
 @section('content')
     {{-- Success/Error Messages --}}
     @if (session('success'))
-        <div class="mb-6 p-4 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-xl" role="alert">
+        <div class="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-xl" role="alert">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
                     <i class="fa-solid fa-check text-white"></i>
@@ -19,7 +19,7 @@
     @endif
 
     @if (session('error'))
-        <div class="mb-6 p-4 bg-linear-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl" role="alert">
+        <div class="mb-6 p-4 bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl" role="alert">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center">
                     <i class="fa-solid fa-exclamation-triangle text-white"></i>
@@ -33,14 +33,14 @@
     @endif
 
     <div class="max-w-6xl mx-auto">
-        <h1 class="text-2xl md:text-3xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
+        <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
             <i class="fa-solid fa-rotate-left mr-3"></i>Kembalikan Barang
         </h1>
 
         {{-- QR Scanner Section --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mb-6">
             <h2 class="text-xl font-bold text-gray-800 mb-4">Scan QR Code Barang</h2>
-            <button id="qr-scanner-btn" class="w-full bg-linear-to-r from-blue-500 to-cyan-500 text-white font-semibold py-4 px-6 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-3">
+            <button id="qr-scanner-btn" class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-4 px-6 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-3">
                 <i class="fa-solid fa-qrcode text-2xl"></i>
                 <span class="text-lg">Scan QR Code untuk Kembalikan</span>
             </button>
@@ -72,7 +72,7 @@
                             <form action="{{ route('loan.return.submit') }}" method="POST" class="mt-3">
                                 @csrf
                                 <input type="hidden" name="transaction_id" value="{{ $loan->id }}">
-                                <button type="submit" class="w-full bg-linear-to-r from-orange-500 to-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                                <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-rotate-left"></i>
                                     <span>Ajukan Pengembalian</span>
                                 </button>
@@ -233,7 +233,7 @@
             function showNotification(message, type = 'success') {
                 const notification = document.createElement('div');
                 notification.className =
-                    `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg ${type === 'success' ? 'bg-linear-to-r from-green-500 to-emerald-500' : 'bg-linear-to-r from-red-500 to-rose-500'} text-white transform translate-x-full transition-transform duration-300`;
+                    `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg ${type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-red-500 to-rose-500'} text-white transform translate-x-full transition-transform duration-300`;
                 notification.innerHTML = `
                     <div class="flex items-center space-x-3">
                         <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} text-xl"></i>
@@ -252,7 +252,7 @@
 
             // Auto-hide alerts
             setTimeout(function() {
-                const alerts = document.querySelectorAll('.bg-linear-to-r');
+                const alerts = document.querySelectorAll('.bg-gradient-to-r');
                 alerts.forEach(alert => {
                     if (alert.classList.contains('from-green-50') || alert.classList.contains('from-red-50')) {
                         alert.style.transition = 'opacity 0.5s';
