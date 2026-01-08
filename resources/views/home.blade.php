@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+        <a class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group" href="/manage">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-boxes text-xl text-white"></i>
             </div>
@@ -14,9 +14,9 @@
             <div class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                 {{ $totalBarang }}
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+        <a class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group" href="/manage">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-box-open text-xl text-white"></i>
             </div>
@@ -24,9 +24,9 @@
             <div class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                 {{ $stokHabis }}
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+        <a class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group" href="/manage">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-boxes-stacked text-xl text-white"></i>
             </div>
@@ -34,9 +34,9 @@
             <div class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                 {{ $stokTersedia }}
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+        <a class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group" href="/history">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-box text-xl text-white"></i>
             </div>
@@ -44,9 +44,9 @@
             <div class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                 {{ $sedangDipinjam }}
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+        <a class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group" href="/admin/loans">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-clock text-xl text-white"></i>
             </div>
@@ -54,9 +54,9 @@
             <div class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                 {{ $menungguPersetujuan }}
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+        <a class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group" href="/admin/loans">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-rotate-left text-xl text-white"></i>
             </div>
@@ -64,7 +64,7 @@
             <div class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                 {{ $menungguPengembalian }}
             </div>
-        </div>
+        </a>
     </div>
 
     <!-- Charts Container -->
