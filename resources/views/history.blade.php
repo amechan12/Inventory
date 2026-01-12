@@ -67,6 +67,7 @@
                         <th scope="col" class="px-6 py-4 font-semibold">No. Pinjaman</th>
                         <th scope="col" class="px-6 py-4 font-semibold">Peminjam</th>
                         <th scope="col" class="px-6 py-4 font-semibold">Barang</th>
+                        <th scope="col" class="px-6 py-4 font-semibold">Jumlah Item</th>
                         <th scope="col" class="px-6 py-4 font-semibold">Status</th>
                         <th scope="col" class="px-6 py-4 font-semibold">Tanggal Pinjam</th>
                         <th scope="col" class="px-6 py-4 font-semibold">Durasi</th>
@@ -85,6 +86,9 @@
                                 @if($trx->products->count() > 1)
                                     <span class="text-gray-500 text-xs">+{{ $trx->products->count() - 1 }} lainnya</span>
                                 @endif
+                            </td>
+                            <td class="px-6 py-4 text-gray-700">
+                                {{ $trx->products->sum('pivot.quantity') }}
                             </td>
                             <td class="px-6 py-4">
                                 @php
@@ -135,7 +139,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-20 text-gray-500">
+                            <td colspan="8" class="text-center py-20 text-gray-500">
                                 <i class="fa-solid fa-inbox text-6xl text-gray-300 mb-4 block"></i>
                                 <p class="text-lg font-medium">
                                     @if (request('search'))
@@ -384,16 +388,78 @@
                 });
             });
 
-            setTimeout(function() {
-                const alerts = document.querySelectorAll('.bg-gradient-to-r');
-                alerts.forEach(alert => {
-                    if (alert.classList.contains('from-green-50') || alert.classList.contains('from-red-50')) {
-                        alert.style.transition = 'opacity 0.5s';
-                        alert.style.opacity = '0';
-                        setTimeout(() => alert.remove(), 500);
+            // Use layout search input to filter history table live
+            function debounce(fn, wait) {
+                let t;
+                return function(...args) {
+                    clearTimeout(t);
+                    t = setTimeout(() => fn.apply(this, args), wait);
+                };
+            }
+
+            (function() {
+                const search = document.querySelector('input[name="search"]');
+                const tbody = document.querySelector('#historyTable tbody');
+                if (!search || !tbody) {
+                    // Still run the alert cleanup below
+                } else {
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+                    function showNoResults(show) {
+                        let nr = document.getElementById('no-history-found-row');
+                        if (show) {
+                            if (!nr) {
+                                nr = document.createElement('tr');
+                                nr.id = 'no-history-found-row';
+                                nr.innerHTML = '<td colspan="7" class="text-center py-20 text-gray-500">Transaksi dengan kata kunci "' + (search.value || '') + '" tidak ditemukan.</td>';
+                                tbody.appendChild(nr);
+                            } else {
+                                // update message to reflect current query
+                                nr.querySelector('td').innerHTML = 'Transaksi dengan kata kunci "' + (search.value || '') + '" tidak ditemukan.';
+                            }
+                        } else if (nr) {
+                            nr.remove();
+                        }
                     }
-                });
-            }, 5000);
+
+                    function applyFilter() {
+                        const q = search.value.trim().toLowerCase();
+                        let visible = 0;
+                        rows.forEach(r => {
+                            const colspanTd = r.querySelector('td[colspan]');
+                            if (colspanTd) return; // skip placeholder/no-data rows
+
+                            const text = r.textContent.toLowerCase();
+                            if (text.includes(q)) {
+                                r.style.display = '';
+                                visible++;
+                            } else {
+                                r.style.display = 'none';
+                            }
+                        });
+
+                        showNoResults(visible === 0);
+                    }
+
+                    const debounced = debounce(applyFilter, 180);
+                    search.addEventListener('input', debounced);
+
+                    // Apply initial filter (e.g., when server populated ?search=...)
+                    applyFilter();
+                }
+
+                // Alert auto-dismiss
+                setTimeout(function() {
+                    const alerts = document.querySelectorAll('.bg-gradient-to-r');
+                    alerts.forEach(alert => {
+                        if (alert.classList.contains('from-green-50') || alert.classList.contains('from-red-50')) {
+                            alert.style.transition = 'opacity 0.5s';
+                            alert.style.opacity = '0';
+                            setTimeout(() => alert.remove(), 500);
+                        }
+                    });
+                }, 5000);
+            })();
         });
     </script>
 @endsection

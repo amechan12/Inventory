@@ -134,6 +134,7 @@ class LoanController extends Controller
             'product_id' => 'required|exists:products,id',
             'duration' => 'required|integer|min:1|max:365',
             'borrow_reason' => 'required|string|max:500',
+            'quantity' => 'nullable|integer|min:1'
         ]);
 
         try {
@@ -141,11 +142,14 @@ class LoanController extends Controller
 
             $product = Product::findOrFail($request->product_id);
             
+            // Determine requested quantity
+            $quantity = (int) ($request->input('quantity', 1));
+
             // Cek stok tersedia (stock - reserved_stock)
             $availableStock = $product->stock - $product->reserved_stock;
             
-            if ($availableStock <= 0) {
-                throw new \Exception('Barang tidak tersedia untuk dipinjam. Stok sedang dipesan atau sudah habis.');
+            if ($availableStock < $quantity) {
+                throw new \Exception('Barang tidak tersedia dalam jumlah yang diminta. Tersedia: ' . $availableStock);
             }
 
             // Generate invoice number
@@ -163,22 +167,31 @@ class LoanController extends Controller
                 'payment_method' => null,
             ]);
 
-            // Attach product ke transaction
+            // Attach product ke transaction with requested quantity
             $transaction->products()->attach($product->id, [
-                'quantity' => 1,
+                'quantity' => $quantity,
                 'price_per_item' => 0, // Tidak ada harga untuk pinjaman
             ]);
 
             // Tambahkan reserved_stock (barang ditandai sebagai "Dipesan")
-            $product->increment('reserved_stock');
+            if ($quantity > 0) {
+                $product->increment('reserved_stock', $quantity);
+            }
 
             DB::commit();
             
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true]);
+            }
+
             return redirect()->route('loan.borrow')
                 ->with('success', 'Pengajuan peminjaman berhasil dikirim. Menunggu persetujuan admin.');
             
         } catch (\Exception $e) {
             DB::rollBack();
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Pengajuan peminjaman gagal: ' . $e->getMessage()], 400);
+            }
             return back()->with('error', 'Pengajuan peminjaman gagal: ' . $e->getMessage())
                 ->withInput();
         }
@@ -253,6 +266,12 @@ class LoanController extends Controller
 
             DB::commit();
             
+            // If the submission included a segment_id (submitted from segment return page), redirect back to that segment return page
+            if ($request->filled('segment_id')) {
+                return redirect()->route('segments.return', $request->input('segment_id'))
+                    ->with('success', 'Pengajuan pengembalian berhasil dikirim. Admin akan memverifikasi barang.');
+            }
+
             return redirect()->route('loan.return')
                 ->with('success', 'Pengajuan pengembalian berhasil dikirim. Admin akan memverifikasi barang.');
             

@@ -57,6 +57,8 @@ Route::middleware(['auth'])->group(function () {
         // Admin Loan Management Routes
         Route::get('/admin/loans', [AdminLoanController::class, 'index'])->name('admin.loans');
         Route::post('/admin/loans/{id}/approve', [AdminLoanController::class, 'approveBorrow'])->name('admin.loans.approve');
+        // Approve all pending loans
+        Route::post('/admin/loans/approve-all', [AdminLoanController::class, 'approveAll'])->name('admin.loans.approveAll');
         Route::post('/admin/loans/{id}/reject', [AdminLoanController::class, 'rejectBorrow'])->name('admin.loans.reject');
         Route::post('/admin/loans/{id}/confirm-return', [AdminLoanController::class, 'confirmReturn'])->name('admin.loans.confirm-return');
     });

@@ -88,10 +88,21 @@
 
     {{-- Pending Loans Section --}}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mb-6">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-clock text-orange-500"></i>
-            Menunggu Persetujuan ({{ $pendingLoans->count() }})
-        </h2>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-clock text-orange-500"></i>
+                Menunggu Persetujuan ({{ $pendingLoans->count() }})
+            </h2>
+
+            @if($pendingLoans->count() > 0)
+            <form id="approveAllForm" action="{{ route('admin.loans.approveAll') }}" method="POST" onsubmit="return confirm('Yakin setujui semua pengajuan peminjaman? Pastikan stok cukup.');">
+                @csrf
+                <button type="submit" id="approveAllBtn" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm hover:shadow-lg">
+                    <i class="fa-solid fa-check mr-1"></i> Setujui Semua
+                </button>
+            </form>
+            @endif
+        </div>
 
         @if($pendingLoans->count() > 0)
             <div class="space-y-4">
@@ -103,13 +114,20 @@
                                     <div class="flex-1">
                                         <h3 class="font-bold text-gray-800 mb-2">
                                             {{ $loan->products->first()->name }}
+                                            @if($loan->products->count() > 1)
+                                                <span class="text-xs text-gray-500">+{{ $loan->products->count() - 1 }} lainnya</span>
+                                            @endif
                                         </h3>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600">
                                             <div>
                                                 <span class="font-semibold">No. Pinjaman:</span> {{ $loan->invoice_number }}
                                             </div>
                                             <div>
                                                 <span class="font-semibold">Peminjam:</span> {{ $loan->user->name }}
+                                            </div>
+                                            <div>
+                                                <span class="font-semibold">Jumlah Item:</span>
+                                                {{ $loan->products->sum(function($p){ return $p->pivot->quantity; }) }}
                                             </div>
                                             <div>
                                                 <span class="font-semibold">Durasi:</span> {{ $loan->duration }} hari
@@ -169,6 +187,9 @@
                             <div class="flex-1">
                                 <h3 class="font-bold text-gray-800 mb-2">
                                     {{ $loan->products->first()->name }}
+                                    @if($loan->products->count() > 1)
+                                        <span class="text-xs text-gray-500">+{{ $loan->products->count() - 1 }} lainnya</span>
+                                    @endif
                                 </h3>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
                                     <div>
@@ -178,11 +199,19 @@
                                         <span class="font-semibold">Peminjam:</span> {{ $loan->user->name }}
                                     </div>
                                     <div>
-                                        <span class="font-semibold">Tanggal Pinjam:</span> {{ $loan->borrow_date->format('d/m/Y') }}
+                                        <span class="font-semibold">Jumlah Item:</span> {{ $loan->products->sum(function($p){ return $p->pivot->quantity; }) }}
                                     </div>
                                     <div>
-                                        <span class="font-semibold">Durasi:</span> {{ $loan->duration }} hari
+                                        <span class="font-semibold">Tanggal Pinjam:</span> {{ $loan->borrow_date->format('d/m/Y') }}
                                     </div>
+                                </div>
+
+                                <div class="mt-2 text-sm text-gray-700">
+                                    <ul class="space-y-1">
+                                        @foreach($loan->products as $p)
+                                            <li>{{ $p->name }} &times; <strong>{{ $p->pivot->quantity }}</strong></li>
+                                        @endforeach
+                                    </ul>
                                 </div>
                             </div>
                             

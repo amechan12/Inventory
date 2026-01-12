@@ -13,6 +13,7 @@ class Segment extends Model
         'name',
         'code',
         'description',
+        'image_path',
     ];
 
     public function products()

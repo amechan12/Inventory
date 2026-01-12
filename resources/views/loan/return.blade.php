@@ -39,7 +39,7 @@
 
         {{-- QR Scanner Section --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mb-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Scan QR Code Barang</h2>
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Scan QR Code Segmen</h2>
             <button id="qr-scanner-btn" class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-4 px-6 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-3">
                 <i class="fa-solid fa-qrcode text-2xl"></i>
                 <span class="text-lg">Scan QR Code untuk Kembalikan</span>
@@ -58,6 +58,9 @@
                                 <div class="flex-1">
                                     <h3 class="font-bold text-gray-800 mb-1">
                                         {{ $loan->products->first()->name }}
+                                        @if($loan->products->count() > 1)
+                                            <span class="text-xs text-gray-500">+{{ $loan->products->count() - 1 }} lainnya</span>
+                                        @endif
                                     </h3>
                                     <p class="text-sm text-gray-600">
                                         <span class="font-semibold">No. Pinjaman:</span> {{ $loan->invoice_number }}
@@ -68,9 +71,17 @@
                                     <p class="text-sm text-gray-600">
                                         <span class="font-semibold">Durasi:</span> {{ $loan->duration }} hari
                                     </p>
-                                    <p class="text-sm text-gray-600">
-                                        <span class="font-semibold">Segmen:</span> {{ $loan->products->first()->segment ? $loan->products->first()->segment->name : '-' }}
+                                    <p class="text-sm text-gray-600 mt-2">
+                                        <span class="font-semibold">Jumlah Item:</span> {{ $loan->products->sum('pivot.quantity') }}
                                     </p>
+
+                                    <div class="mt-3">
+                                        <ul class="text-sm text-gray-700 space-y-1">
+                                            @foreach($loan->products as $p)
+                                                <li>{{ $p->name }} &times; <strong>{{ $p->pivot->quantity }}</strong></li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -90,7 +101,7 @@
     <div id="qr-scanner-modal" class="fixed inset-0 bg-black/70 z-50 hidden">
         <div class="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl p-6 max-w-lg w-full">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-gray-800">Scan QR Code Barang</h2>
+                <h2 class="text-xl font-bold text-gray-800">Scan QR Code Segmen</h2>
                 <button id="close-qr-scanner" class="text-gray-500 hover:text-gray-700">
                     <i class="fa-solid fa-times text-2xl"></i>
                 </button>
@@ -99,7 +110,7 @@
             <div id="qr-reader" class="w-full"></div>
 
             <div class="mt-4 text-center text-sm text-gray-600">
-                <p>Arahkan kamera ke QR code barang yang ingin dikembalikan</p>
+                <p>Arahkan kamera ke QR code segmen yang ingin dikembalikan</p>
             </div>
         </div>
     </div>

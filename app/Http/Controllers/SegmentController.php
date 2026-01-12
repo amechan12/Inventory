@@ -6,6 +6,7 @@ use App\Models\Segment;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 use chillerlan\QRCode\Output\QROutputInterface;
@@ -30,14 +31,21 @@ class SegmentController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $code = Str::slug($request->name) . '-' . strtolower(Str::random(4));
+
+        $path = null;
+        if ($request->hasFile('image_path')) {
+            $path = $request->file('image_path')->store('segments', 'public');
+        }
 
         Segment::create([
             'name' => $request->name,
             'code' => $code,
             'description' => $request->description,
+            'image_path' => $path,
         ]);
 
         return redirect()->route('segments.index')->with('success', 'Segmen berhasil dibuat.');
@@ -53,15 +61,32 @@ class SegmentController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $segment->update($request->only('name', 'description'));
+        $data = $request->only('name', 'description');
+
+        // Handle image upload
+        if ($request->hasFile('image_path')) {
+            // Delete old image if exists
+            if ($segment->image_path) {
+                Storage::disk('public')->delete($segment->image_path);
+            }
+            // Store new image
+            $data['image_path'] = $request->file('image_path')->store('segments', 'public');
+        }
+
+        $segment->update($data);
 
         return redirect()->route('segments.index')->with('success', 'Segmen berhasil diperbarui.');
     }
 
     public function destroy(Segment $segment)
     {
+        // Delete image if exists
+        if ($segment->image_path) {
+            Storage::disk('public')->delete($segment->image_path);
+        }
         // Optional: check whether products exist in the segment
         $segment->delete();
         return redirect()->route('segments.index')->with('success', 'Segmen berhasil dihapus.');
@@ -148,6 +173,8 @@ class SegmentController extends Controller
             return response()->json(['success' => false, 'error' => 'Tidak ada transaksi pengembalian untuk produk ini di segmen ini'], 404);
         }
 
+        $matching = $transaction->products->firstWhere('id', $productId);
+
         return response()->json([
             'success' => true,
             'transaction' => [
@@ -157,7 +184,12 @@ class SegmentController extends Controller
                     'id' => $transaction->user->id,
                     'name' => $transaction->user->name,
                 ],
-                'product' => $transaction->products->first(),
+                'product' => $matching ? [
+                    'id' => $matching->id,
+                    'name' => $matching->name,
+                    'quantity' => $matching->pivot->quantity ?? 1,
+                ] : null,
+                'products' => $transaction->products->map(function($p){ return ['id' => $p->id, 'name' => $p->name, 'quantity' => $p->pivot->quantity ?? 1]; }),
                 'borrow_date' => $transaction->borrow_date ? $transaction->borrow_date->format('d/m/Y') : null,
                 'duration' => $transaction->duration,
                 'borrow_reason' => $transaction->borrow_reason,

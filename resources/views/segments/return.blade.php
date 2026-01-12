@@ -10,11 +10,7 @@
                 <p class="text-sm text-gray-500">Kode: {{ $segment->code }}</p>
             </div>
             <div class="text-right">
-                <img src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl={{ urlencode(url('/return/segment/' . $segment->id)) }}"
-                    alt="QR" class="w-28 h-28 border rounded-lg inline-block" />
-                <div class="mt-2">
-                    <a href="{{ url('/return/segment/' . $segment->id) }}" class="text-xs text-indigo-600">Buka</a>
-                </div>
+                <img src="{{ Storage::url($segment->image_path) }}" alt="{{ $segment->name }}" class="w-20 h-20 object-cover border rounded-lg inline-block" />
             </div>
         </div>
 
@@ -28,6 +24,9 @@
                                 <div class="flex-1">
                                     <h3 class="font-bold text-gray-800 mb-1">
                                         {{ $loan->products->first()->name }}
+                                        @if($loan->products->count() > 1)
+                                            <span class="text-xs text-gray-500">+{{ $loan->products->count() - 1 }} lainnya</span>
+                                        @endif
                                     </h3>
                                     <p class="text-sm text-gray-600">
                                         <span class="font-semibold">No. Pinjaman:</span> {{ $loan->invoice_number }}
@@ -38,11 +37,23 @@
                                     <p class="text-sm text-gray-600">
                                         <span class="font-semibold">Durasi:</span> {{ $loan->duration }} hari
                                     </p>
+                                    <p class="text-sm text-gray-600 mt-3">
+                                        <span class="font-semibold">Jumlah Item:</span> {{ $loan->products->sum('pivot.quantity') }}
+                                    </p>
+
+                                    <div class="mt-3">
+                                        <ul class="text-sm text-gray-700 space-y-1">
+                                            @foreach($loan->products as $p)
+                                                <li>{{ $p->name }} &times; <strong>{{ $p->pivot->quantity }}</strong></li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                             <form action="{{ route('loan.return.submit') }}" method="POST" class="mt-3">
                                 @csrf
                                 <input type="hidden" name="transaction_id" value="{{ $loan->id }}">
+                                <input type="hidden" name="segment_id" value="{{ $segment->id }}">
                                 <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-rotate-left"></i>
                                     <span>Ajukan Pengembalian</span>
@@ -165,7 +176,10 @@
             });
 
             function showConfirmModal(trx) {
-                if (!confirm(`Konfirmasi pengembalian transaksi #${trx.invoice_number} oleh ${trx.user.name}?`))
+                const productsList = (trx.products || []).map(p => `${p.name} × ${p.quantity}`).join('\n');
+                const totalItems = (trx.products || []).reduce((s, p) => s + (p.quantity || 0), 0);
+
+                if (!confirm(`Konfirmasi pengembalian transaksi #${trx.invoice_number} oleh ${trx.user.name}?\n\nItems:\n${productsList}\n\nTotal Item: ${totalItems}`))
                     return;
 
                 // Buka form verifikasi (simple prompt for now)

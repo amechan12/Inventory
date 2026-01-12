@@ -111,7 +111,7 @@
                 </div>
 
                 <!-- Center: Search (only on certain pages) -->
-                @if (!request()->is('home') && !request()->is('/') && !request()->is('profile') && !request()->is('borrow') && !request()->is('return') )
+                @if (!request()->is('home') && !request()->is('/') && !request()->is('profile') && !request()->is('borrow') && !request()->is('return') && !request()->is('admin/loans') )
                     <div class="hidden md:block flex-1 max-w-xl mx-8">
                         <form action="{{ url()->current() }}" method="GET" class="relative">
                             <i
@@ -168,17 +168,26 @@
                         <span class="font-medium">Kembalikan Barang</span>
                     </a>
 
-                    @if (in_array(Auth::user()->role, ['kasir', 'pengelola']))
+                    @if (Auth::user()->role == 'pengelola')
+                        <a href="{{ route('admin.loans') }}"
+                            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('admin/loans') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
+                            <i class="fa-solid fa-clipboard-list text-lg"></i>
+                            <span class="font-medium">Kelola Pinjaman</span>
+                        </a>
                         <a href="/manage"
                             class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('manage') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                             <i class="fa-solid fa-pen-to-square text-lg"></i>
                             <span class="font-medium">Kelola Barang</span>
                         </a>
-
-                        <a href="{{ route('admin.loans') }}"
-                            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('admin/loans') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
-                            <i class="fa-solid fa-clipboard-list text-lg"></i>
-                            <span class="font-medium">Kelola Pinjaman</span>
+                        <a href="{{ route('segments.index') }}"
+                            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('segments*') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
+                            <i class="fa-solid fa-map-location-dot text-lg"></i>
+                            <span class="font-medium">Kelola Segmen</span>
+                        </a>
+                        <a href="{{ route('users.index') }}"
+                            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('manage-users') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
+                            <i class="fa-solid fa-users-cog text-lg"></i>
+                            <span class="font-medium">Kelola Pengguna</span>
                         </a>
                     @endif
 
@@ -187,20 +196,6 @@
                         <i class="fa-solid fa-file text-lg"></i>
                         <span class="font-medium">Riwayat</span>
                     </a>
-
-                    @if (Auth::user()->role == 'pengelola')
-                        <a href="{{ route('users.index') }}"
-                            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('manage-users') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
-                            <i class="fa-solid fa-users-cog text-lg"></i>
-                            <span class="font-medium">Pengguna</span>
-                        </a>
-
-                        <a href="{{ route('segments.index') }}"
-                            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('segments*') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
-                            <i class="fa-solid fa-map-location-dot text-lg"></i>
-                            <span class="font-medium">Segmen</span>
-                        </a>
-                    @endif
 
                     <a href="/profile"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('profile') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">

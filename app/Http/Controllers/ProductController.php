@@ -28,10 +28,39 @@ class ProductController extends Controller
             });
         }
 
+        // Build categories aggregation (name, slug, count)
+        $allCategories = Product::whereNotNull('category')
+            ->get()
+            ->groupBy('category')
+            ->map(function ($group, $name) {
+                return [
+                    'name' => $name,
+                    'slug' => \Illuminate\Support\Str::slug($name),
+                    'count' => $group->count(),
+                    'icon' => null,
+                ];
+            })->values()->toArray();
+
+        // Apply category filter (slug -> original name)
+        if ($request->filled('category')) {
+            $catSlug = $request->input('category');
+            $matched = collect($allCategories)->firstWhere('slug', $catSlug);
+            if ($matched) {
+                $query->where('category', $matched['name']);
+            }
+        }
+
+        // Apply segment filter by id
+        if ($request->filled('segment')) {
+            $query->where('segment_id', $request->input('segment'));
+        }
+
         $products = $query->latest()->get();
         $segments = Segment::all();
+        $totalProducts = Product::count();
+        $categories = $allCategories;
 
-        return view('manage', compact('products', 'segments'));
+        return view('manage', compact('products', 'segments', 'categories', 'totalProducts'));
     }
 
     // Menyimpan produk baru
@@ -68,9 +97,32 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'category' => 'nullable|string',
             'segment_id' => 'nullable|exists:segments,id',
+            'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'remove_image' => 'nullable',
         ]);
 
+        // Update basic fields
         $product->update($request->only('name', 'category', 'segment_id'));
+
+        // Handle new uploaded image
+        if ($request->hasFile('image_path')) {
+            $path = $request->file('image_path')->store('products', 'public');
+
+            // delete old image if exists
+            if ($product->image_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image_path);
+            }
+
+            $product->image_path = $path;
+            $product->save();
+        } else if ($request->filled('remove_image')) {
+            // Remove existing image if requested
+            if ($product->image_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image_path);
+                $product->image_path = null;
+                $product->save();
+            }
+        }
 
         return back()->with('success', 'Barang berhasil diperbarui!');
     }

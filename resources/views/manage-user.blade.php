@@ -92,6 +92,7 @@
 </div>
 
 <script>
+    // Alert auto-dismiss
     setTimeout(function() {
         const alerts = document.querySelectorAll('.bg-gradient-to-r');
         alerts.forEach(alert => {
@@ -102,5 +103,66 @@
             }
         });
     }, 5000);
+
+    // Use layout search input to filter users live
+    (function() {
+        function debounce(fn, wait) {
+            let t;
+            return function(...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), wait);
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const search = document.querySelector('input[name="search"]');
+            if (!search) return;
+
+            const tbody = document.querySelector('table tbody');
+            if (!tbody) return;
+
+            const userRows = Array.from(tbody.querySelectorAll('tr'));
+
+            function showNoResults(show) {
+                let nr = document.getElementById('no-users-found-row');
+                if (show) {
+                    if (!nr) {
+                        nr = document.createElement('tr');
+                        nr.id = 'no-users-found-row';
+                        nr.innerHTML = '<td colspan="4" class="text-center py-8 text-gray-500">Tidak ada pengguna yang cocok.</td>';
+                        tbody.appendChild(nr);
+                    }
+                } else if (nr) {
+                    nr.remove();
+                }
+            }
+
+            function applyFilter() {
+                const q = search.value.trim().toLowerCase();
+                let visible = 0;
+                userRows.forEach(r => {
+                    // If this row is the empty/placeholder row (colspan), keep it as-is and treat as not a data row
+                    const colspanTd = r.querySelector('td[colspan]');
+                    if (colspanTd) return;
+
+                    const text = r.textContent.toLowerCase();
+                    if (text.includes(q)) {
+                        r.style.display = '';
+                        visible++;
+                    } else {
+                        r.style.display = 'none';
+                    }
+                });
+
+                showNoResults(visible === 0);
+            }
+
+            const debouncedFilter = debounce(applyFilter, 180);
+            search.addEventListener('input', debouncedFilter);
+
+            // Apply initial filter if the layout search already has a value
+            applyFilter();
+        });
+    })();
 </script>
 @endsection

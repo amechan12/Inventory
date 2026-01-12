@@ -45,6 +45,8 @@
     <div class="flex flex-col lg:flex-row lg:space-x-6">
         {{-- Products Grid --}}
         <div class="w-full lg:w-2/3 order-2 lg:order-1">
+            @include('components.category-filter', ['categories' => $categories ?? [], 'products' => $products, 'totalProducts' => $totalProducts ?? $products->count(), 'segments' => $segments ?? []])
+
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
                     <h1 class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
@@ -112,7 +114,8 @@
                                         data-id="{{ $product->id }}" data-name="{{ $product->name }}"
                                         data-stock="{{ $product->stock }}"
                                         data-category="{{ $product->category }}"
-                                        data-segment-id="{{ $product->segment_id }}">
+                                        data-segment-id="{{ $product->segment_id }}"
+                                        data-image-url="{{ $product->image_path ? asset('storage/' . $product->image_path) : '' }}">
                                         <i class="fa-solid fa-edit mr-1"></i>Edit
                                     </button>
                                     <button
@@ -224,7 +227,7 @@
                         <p id="edit-instruction" class="text-sm text-gray-500 mb-4">
                             Pilih barang dari daftar untuk mengeditnya.
                         </p>
-                        <form id="edit-form" action="" method="POST" class="space-y-4">
+                        <form id="edit-form" action="" method="POST" enctype="multipart/form-data" class="space-y-4">
                             @csrf
                             @method('PUT')
                             <div>
@@ -246,6 +249,20 @@
                                         <option value="{{ $segment->id }}">{{ $segment->name }}</option>
                                     @endforeach
                                 </select>
+                            </div>
+
+                            <div>
+                                <label for="image_edit" class="block text-sm font-medium text-gray-700 mb-2">Gambar (ubah)</label>
+                                <div class="flex items-center gap-3">
+                                    <div id="edit-image-preview" class="w-24 h-24 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center">
+                                        <img src="" alt="Preview" id="edit-image-img" class="w-full h-full object-cover hidden" />
+                                        <span id="edit-image-empty" class="text-xs text-gray-400">Tidak ada gambar</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <input type="file" id="image_edit" name="image_path" accept="image/*" class="block text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-indigo-50 file:to-purple-50 file:text-indigo-700" />
+                                        <label class="inline-flex items-center text-sm mt-2"><input type="checkbox" name="remove_image" id="remove_image_edit" class="mr-2"> Hapus gambar saat update</label>
+                                    </div>
+                                </div>
                             </div>
 
                             <button type="submit"
@@ -357,7 +374,7 @@
                     <div id="mobile-edit" class="mobile-tab-content hidden">
                         <p id="mobile-edit-instruction" class="text-sm text-gray-500 mb-4">Pilih barang dari daftar untuk
                             mengeditnya.</p>
-                        <form id="mobile-edit-form" action="" method="POST" class="space-y-4">
+                        <form id="mobile-edit-form" action="" method="POST" enctype="multipart/form-data" class="space-y-4">
                             @csrf
                             @method('PUT')
                             <div>
@@ -377,6 +394,20 @@
                                         <option value="{{ $segment->id }}">{{ $segment->name }}</option>
                                     @endforeach
                                 </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Gambar (ubah)</label>
+                                <div class="flex items-center gap-3">
+                                    <div id="mobile-edit-image-preview" class="w-20 h-20 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center">
+                                        <img src="" alt="Preview" id="mobile-edit-image-img" class="w-full h-full object-cover hidden" />
+                                        <span id="mobile-edit-image-empty" class="text-xs text-gray-400">Tidak ada gambar</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <input type="file" id="mobile_image_edit" name="image_path" accept="image/*" class="block text-sm text-gray-500" />
+                                        <label class="inline-flex items-center text-sm mt-2"><input type="checkbox" name="remove_image" id="mobile_remove_image_edit" class="mr-2"> Hapus gambar saat update</label>
+                                    </div>
+                                </div>
                             </div>
 
                             <button type="submit"
@@ -515,12 +546,44 @@
                 });
             });
 
-            function populateEditForm(id, name, price, category, segmentId) {
+            function populateEditForm(id, name, price, category, segmentId, imageUrl) {
                 editForm.action = `/products/${id}`;
                 editForm.querySelector('#name_edit').value = name;
                 editForm.querySelector('#category_edit').value = category || '';
                 document.getElementById('segment_edit').value = segmentId || '';
                 document.getElementById('edit-instruction').classList.add('hidden');
+
+                // Handle image preview for desktop
+                var editImg = document.getElementById('edit-image-img');
+                var editEmpty = document.getElementById('edit-image-empty');
+                var removeCheckbox = document.getElementById('remove_image_edit');
+                if (imageUrl) {
+                    editImg.src = imageUrl;
+                    editImg.classList.remove('hidden');
+                    editEmpty.classList.add('hidden');
+                    removeCheckbox.checked = false;
+                } else {
+                    editImg.src = '';
+                    editImg.classList.add('hidden');
+                    editEmpty.classList.remove('hidden');
+                    removeCheckbox.checked = false;
+                }
+
+                // Mobile preview
+                var mobileImg = document.getElementById('mobile-edit-image-img');
+                var mobileEmpty = document.getElementById('mobile-edit-image-empty');
+                var mobileRemove = document.getElementById('mobile_remove_image_edit');
+                if (imageUrl) {
+                    mobileImg.src = imageUrl;
+                    mobileImg.classList.remove('hidden');
+                    mobileEmpty.classList.add('hidden');
+                    mobileRemove.checked = false;
+                } else {
+                    mobileImg.src = '';
+                    mobileImg.classList.add('hidden');
+                    mobileEmpty.classList.remove('hidden');
+                    mobileRemove.checked = false;
+                }
 
                 mobileEditForm.action = `/products/${id}`;
                 document.getElementById('mobile_name_edit').value = name;
@@ -550,7 +613,8 @@
                         button.dataset.name,
                         0,
                         button.dataset.category,
-                        button.dataset.segmentId
+                        button.dataset.segmentId,
+                        button.dataset.imageUrl
                     );
 
                     if (window.innerWidth < 1024) {
@@ -562,6 +626,61 @@
                     }
                 });
             });
+
+            // Image input preview handlers
+            var desktopImageInput = document.getElementById('image_edit');
+            var desktopPreviewImg = document.getElementById('edit-image-img');
+            var desktopEmpty = document.getElementById('edit-image-empty');
+            var desktopRemove = document.getElementById('remove_image_edit');
+            if (desktopImageInput) {
+                desktopImageInput.addEventListener('change', function() {
+                    const file = this.files && this.files[0];
+                    if (file) {
+                        desktopPreviewImg.src = URL.createObjectURL(file);
+                        desktopPreviewImg.classList.remove('hidden');
+                        desktopEmpty.classList.add('hidden');
+                        desktopRemove.checked = false;
+                    }
+                });
+            }
+
+            var mobileImageInput = document.getElementById('mobile_image_edit');
+            var mobilePreviewImg = document.getElementById('mobile-edit-image-img');
+            var mobileEmptyEl = document.getElementById('mobile-edit-image-empty');
+            var mobileRemoveCheck = document.getElementById('mobile_remove_image_edit');
+            if (mobileImageInput) {
+                mobileImageInput.addEventListener('change', function() {
+                    const file = this.files && this.files[0];
+                    if (file) {
+                        mobilePreviewImg.src = URL.createObjectURL(file);
+                        mobilePreviewImg.classList.remove('hidden');
+                        mobileEmptyEl.classList.add('hidden');
+                        mobileRemoveCheck.checked = false;
+                    }
+                });
+            }
+
+            if (desktopRemove) {
+                desktopRemove.addEventListener('change', function() {
+                    if (this.checked) {
+                        desktopPreviewImg.src = '';
+                        desktopPreviewImg.classList.add('hidden');
+                        desktopEmpty.classList.remove('hidden');
+                        desktopImageInput.value = '';
+                    }
+                });
+            }
+
+            if (mobileRemoveCheck) {
+                mobileRemoveCheck.addEventListener('change', function() {
+                    if (this.checked) {
+                        mobilePreviewImg.src = '';
+                        mobilePreviewImg.classList.add('hidden');
+                        mobileEmptyEl.classList.remove('hidden');
+                        mobileImageInput.value = '';
+                    }
+                });
+            }
 
             restockButtons.forEach(button => {
                 button.addEventListener('click', () => {

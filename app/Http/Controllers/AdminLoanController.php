@@ -42,30 +42,40 @@ class AdminLoanController extends Controller
         return view('admin.loans', compact('pendingLoans', 'returningLoans', 'stats'));
     }
 
-    // Approve peminjaman (status: pending -> borrowed)
+    // Approve peminjaman (status: pending -> borrowed). Handles multiple products & quantities.
     public function approveBorrow(Request $request, $id)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-        ]);
-
         try {
-            DB::beginTransaction();
-
             $transaction = Transaction::where('id', $id)
                 ->where('status', 'pending')
+                ->with('products')
                 ->firstOrFail();
 
-            $product = Product::findOrFail($request->product_id);
-
-            // Pastikan produk masih tersedia
-            $availableStock = $product->stock - $product->reserved_stock;
-            
-            if ($availableStock <= 0) {
-                throw new \Exception('Barang tidak tersedia. Stok habis atau sedang dipesan.');
+            // Check availability for all products in the transaction
+            $insufficient = [];
+            foreach ($transaction->products as $prod) {
+                $qty = $prod->pivot->quantity ?? 1;
+                $productModel = Product::findOrFail($prod->id);
+                $availableStock = $productModel->stock - $productModel->reserved_stock;
+                if ($availableStock < $qty) {
+                    $insufficient[] = "{$productModel->name} (dibutuhkan {$qty}, tersedia {$availableStock})";
+                }
             }
 
-            // Ubah status menjadi borrowed
+            if (count($insufficient) > 0) {
+                throw new \Exception('Stok tidak mencukupi untuk: ' . implode('; ', $insufficient));
+            }
+
+            DB::beginTransaction();
+
+            // All good -> apply changes for every product in this transaction
+            foreach ($transaction->products as $prod) {
+                $qty = $prod->pivot->quantity ?? 1;
+                $productModel = Product::findOrFail($prod->id);
+                $productModel->decrement('reserved_stock', $qty);
+                $productModel->decrement('stock', $qty);
+            }
+
             $transaction->update([
                 'status' => 'borrowed',
                 'approved_by' => Auth::id(),
@@ -73,22 +83,17 @@ class AdminLoanController extends Controller
                 'borrow_date' => Carbon::now(),
             ]);
 
-            // Kurangi reserved_stock dan kurangi stock secara resmi
-            $product->decrement('reserved_stock');
-            $product->decrement('stock');
-
             DB::commit();
             
             return redirect()->route('admin.loans')
                 ->with('success', 'Peminjaman berhasil disetujui. Stok barang dikurangi.');
-            
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menyetujui peminjaman: ' . $e->getMessage());
         }
     }
 
-    // Reject peminjaman (status: pending -> cancelled)
+    // Reject peminjaman (status: pending -> cancelled) and restore reserved_stock for all products in transaction
     public function rejectBorrow($id)
     {
         try {
@@ -96,14 +101,16 @@ class AdminLoanController extends Controller
 
             $transaction = Transaction::where('id', $id)
                 ->where('status', 'pending')
+                ->with('products')
                 ->firstOrFail();
 
-            // Ambil produk dari transaksi
-            $product = $transaction->products->first();
-            
-            if ($product) {
-                // Kembalikan reserved_stock
-                $product->decrement('reserved_stock');
+            // Restore reserved_stock for each product based on pivot quantity
+            foreach ($transaction->products as $prod) {
+                $qty = $prod->pivot->quantity ?? 1;
+                $productModel = Product::find($prod->id);
+                if ($productModel) {
+                    $productModel->decrement('reserved_stock', $qty);
+                }
             }
 
             // Ubah status menjadi cancelled
@@ -124,6 +131,66 @@ class AdminLoanController extends Controller
         }
     }
 
+    // Approve all pending peminjaman (process each transaction and all its products)
+    public function approveAll(Request $request)
+    {
+        $pending = Transaction::where('status', 'pending')->with('products')->get();
+        $approvedCount = 0;
+        $failed = [];
+
+        foreach ($pending as $transaction) {
+            // Check availability for all products in this transaction
+            $insufficient = [];
+            foreach ($transaction->products as $prod) {
+                $qty = $prod->pivot->quantity ?? 1;
+                $productModel = Product::findOrFail($prod->id);
+                $availableStock = $productModel->stock - $productModel->reserved_stock;
+                if ($availableStock < $qty) {
+                    $insufficient[] = "{$productModel->name} (dibutuhkan {$qty}, tersedia {$availableStock})";
+                }
+            }
+
+            if (count($insufficient) > 0) {
+                $failed[] = "{$transaction->invoice_number}: stok tidak mencukupi untuk - " . implode('; ', $insufficient);
+                continue;
+            }
+
+            try {
+                DB::beginTransaction();
+
+                // Deduct reserved_stock and stock for each product
+                foreach ($transaction->products as $prod) {
+                    $qty = $prod->pivot->quantity ?? 1;
+                    $productModel = Product::findOrFail($prod->id);
+                    $productModel->decrement('reserved_stock', $qty);
+                    $productModel->decrement('stock', $qty);
+                }
+
+                $transaction->update([
+                    'status' => 'borrowed',
+                    'approved_by' => Auth::id(),
+                    'approved_at' => Carbon::now(),
+                    'borrow_date' => Carbon::now(),
+                ]);
+
+                DB::commit();
+                $approvedCount++;
+            } catch (\Exception $e) {
+                DB::rollBack();
+                $failed[] = "{$transaction->invoice_number}: " . $e->getMessage();
+            }
+        }
+
+        $message = "{$approvedCount} peminjaman berhasil disetujui.";
+        if (count($failed) > 0) {
+            $message .= ' Beberapa peminjaman gagal disetujui: ' . implode('; ', array_slice($failed, 0, 5));
+            if (count($failed) > 5) $message .= '...';
+            return redirect()->route('admin.loans')->with('error', $message);
+        }
+
+        return redirect()->route('admin.loans')->with('success', $message);
+    }
+
     // Confirm pengembalian (status: returning -> returned)
     public function confirmReturn(Request $request, $id)
     {
@@ -139,13 +206,6 @@ class AdminLoanController extends Controller
                 ->where('status', 'returning')
                 ->firstOrFail();
 
-            // Ambil produk dari transaksi
-            $product = $transaction->products->first();
-            
-            if (!$product) {
-                throw new \Exception('Produk tidak ditemukan dalam transaksi.');
-            }
-
             // Ubah status menjadi returned
             $transaction->update([
                 'status' => 'returned',
@@ -156,7 +216,13 @@ class AdminLoanController extends Controller
 
             // Kembalikan stock hanya jika kondisi good atau damaged (lost tidak dikembalikan)
             if ($request->condition_on_return !== 'lost') {
-                $product->increment('stock');
+                foreach ($transaction->products as $prod) {
+                    $qty = $prod->pivot->quantity ?? 1;
+                    $productModel = Product::find($prod->id);
+                    if ($productModel) {
+                        $productModel->increment('stock', $qty);
+                    }
+                }
             }
 
             DB::commit();

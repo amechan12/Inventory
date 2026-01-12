@@ -19,6 +19,17 @@
                         @endif
                     </p>
                 </div>
+
+                {{-- Segment dropdown (placed inline on sm+) --}}
+                <div class="ml-4 hidden sm:block">
+                    <label for="segment-filter-component" class="sr-only">Filter Segmen</label>
+                    <select id="segment-filter-component" class="input-field text-sm w-56">
+                        <option value="">-- Semua Segmen --</option>
+                        @foreach($segments ?? collect() as $seg)
+                            <option value="{{ $seg->id }}" {{ (string)request('segment') === (string)$seg->id ? 'selected' : '' }}>{{ $seg->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -49,8 +60,9 @@
                 </span>
             @endif
 
+
             {{-- Clear Filters Button --}}
-            @if(request('category') || request('search'))
+            @if(request('category') || request('search') || request('segment'))
                 <a href="{{ url()->current() }}" 
                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-red-50 to-rose-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all"
                    title="Hapus semua filter">
@@ -71,7 +83,7 @@
     </div>
 
     {{-- Active Filters Display --}}
-    @if(request('category') || request('search') || request('sort'))
+    @if(request('category') || request('search') || request('sort') || request('segment'))
         <div class="mt-4 pt-4 border-t border-gray-100">
             <div class="flex flex-wrap items-center gap-2">
                 <span class="text-xs font-semibold text-gray-600 flex items-center gap-1">
@@ -128,8 +140,24 @@
                     </span>
                 @endif
 
+                @if(request('segment'))
+                    @php
+                        $activeSegment = $segments->firstWhere('id', (int)request('segment'));
+                    @endphp
+                    @if($activeSegment)
+                        <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 rounded-lg text-xs font-semibold border border-purple-200">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <span>{{ $activeSegment->name }}</span>
+                            <a href="{{ request()->fullUrlWithQuery(['segment' => null]) }}" 
+                               class="hover:text-red-600 transition-colors">
+                                <i class="fa-solid fa-times"></i>
+                            </a>
+                        </span>
+                    @endif
+                @endif
+
                 {{-- Quick Clear All Button --}}
-                @if((request('category') || request('search') || request('sort')))
+                @if((request('category') || request('search') || request('sort') || request('segment')))
                     <a href="{{ url()->current() }}" 
                        class="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-semibold ml-2 px-3 py-1.5 border-2 border-red-200 rounded-lg hover:bg-red-50 transition-all">
                         <i class="fa-solid fa-refresh"></i>
@@ -141,7 +169,7 @@
     @endif
 
     {{-- No Results Message --}}
-    @if(isset($products) && $products->count() === 0 && (request('category') || request('search')))
+    @if(isset($products) && $products->count() === 0 && (request('category') || request('search') || request('segment')))
         <div class="mt-4 pt-4 border-t border-gray-100">
             <div class="flex items-center justify-between bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 rounded-xl p-4">
                 <div class="flex items-center gap-3">
@@ -187,5 +215,23 @@
                 this.style.pointerEvents = 'none';
             });
         }
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var sel = document.getElementById('segment-filter-component');
+        if (!sel) return;
+        sel.addEventListener('change', function () {
+            var val = this.value;
+            var url = new URL(window.location.href);
+            if (val) {
+                url.searchParams.set('segment', val);
+            } else {
+                url.searchParams.delete('segment');
+            }
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+        });
     });
 </script>

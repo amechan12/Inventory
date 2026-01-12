@@ -220,13 +220,13 @@
             <form id="borrow-modal-form" class="space-y-4" onsubmit="return false;">
                 <div>
                     <label for="borrow-duration" class="block text-sm font-medium text-gray-700 mb-2">Durasi Peminjaman (hari)</label>
-                    <input id="borrow-duration" type="number" min="1" value="7"
+                    <input id="borrow-duration" type="number" min="1" value="3" required
                         class="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <div>
-                    <label for="borrow-reason" class="block text-sm font-medium text-gray-700 mb-2">Alasan Peminjaman (opsional)</label>
-                    <textarea id="borrow-reason" rows="4"
+                    <label for="borrow-reason" class="block text-sm font-medium text-gray-700 mb-2">Alasan Peminjaman</label>
+                    <textarea id="borrow-reason" rows="4" required
                         class="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         placeholder="Contoh: Kebutuhan tugas kuliah..."></textarea>
                 </div>
@@ -610,7 +610,7 @@
             // checkout flow: submit per-item to loan.submit
             async function handleBulkCheckout(duration, borrowReason) {
                 const token = '{{ csrf_token() }}';
-                let successCount = 0;
+                let successUnits = 0; // count units (sum of quantities) successfully submitted
                 for (const item of cart) {
                     try {
                         const res = await fetch('{{ route('loan.submit') }}', {
@@ -620,11 +620,11 @@
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': token
                             },
-                            body: JSON.stringify({ product_id: item.id, duration: duration, borrow_reason: borrowReason })
+                            body: JSON.stringify({ product_id: item.id, duration: duration, borrow_reason: borrowReason, quantity: item.quantity || 1 })
                         });
                         const j = await res.json().catch(() => null);
                         if (res.ok && (j === null || j.success !== false)) {
-                            successCount++;
+                            successUnits += (item.quantity || 1);
                         } else {
                             console.error('Failed to submit borrow for', item, j);
                         }
@@ -633,8 +633,8 @@
                     }
                 }
 
-                if (successCount > 0) {
-                    showNotification(`${successCount} item berhasil diajukan untuk pinjam`);
+                if (successUnits > 0) {
+                    showNotification(`${successUnits} item berhasil diajukan untuk pinjam`);
                     localStorage.removeItem(CART_KEY);
                     cart = [];
                     renderCart();
