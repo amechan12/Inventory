@@ -79,6 +79,12 @@
                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
                 </div>
                 <div>
+                    <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon</label>
+                    <input type="text" id="phone" name="phone" value="{{ old('phone', $user->phone) }}"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                    @error('phone')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+                <div>
                     <label for="role" class="block text-sm font-semibold text-gray-700 mb-2">Role</label>
                     <div class="relative">
                         <input type="text" id="role" name="role" value="{{ ucfirst($user->role) }}" readonly

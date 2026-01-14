@@ -119,9 +119,9 @@
                         <label for="remember-me" class="ml-2 block text-sm text-gray-700">Ingat saya</label>
                     </div>
 
-                    <div class="text-sm">
+                    {{-- <div class="text-sm">
                         <a href="#" class="font-medium text-purple-700 hover:text-purple-600">Lupa password?</a>
-                    </div>
+                    </div> --}}
                 </div>
 
                 {{-- Submit Button --}}

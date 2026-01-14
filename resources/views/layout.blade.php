@@ -30,6 +30,7 @@
             }
         }
 
+
         .animate-gradient {
             background-size: 200% 200%;
             animation: gradient 3s ease infinite;
@@ -84,7 +85,18 @@
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-gray-50 to-indigo-50/30 min-h-screen">
+<body class="min-h-screen" style="background-image: url('{{ asset('background1.jpeg') }}'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;">
+
+    <!-- Page Loading Overlay -->
+    <div id="page-loading" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+        <div class="flex flex-col items-center gap-3">
+            <svg class="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <div class="text-white text-sm font-medium">Memuat...</div>
+        </div>
+    </div>
 
     <!-- Top Navigation Bar -->
     <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
@@ -110,7 +122,6 @@
                     </a>
                 </div>
 
-                <!-- Center: Search (only on certain pages) -->
                 @if (!request()->is('home') && !request()->is('/') && !request()->is('profile') && !request()->is('borrow') && !request()->is('return') && !request()->is('admin/loans') )
                     <div class="hidden md:block flex-1 max-w-xl mx-8">
                         <form action="{{ url()->current() }}" method="GET" class="relative">
@@ -218,6 +229,16 @@
 
             <!-- Main Content -->
             <main class="flex-1 pt-16 lg:pt-8">
+                @if (!request()->is('home') && !request()->is('/') && !request()->is('profile') && !request()->is('borrow') && !request()->is('return') && !request()->is('admin/loans') )
+                    <!-- Mobile: Search in main -->
+                    <div class="block md:hidden px-4 mb-4">
+                        <form action="{{ url()->current() }}" method="GET" class="relative">
+                            <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" name="search" placeholder="Cari..." value="{{ request('search') }}"
+                                class="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all outline-none">
+                        </form>
+                    </div>
+                @endif
                 @yield('content')
             </main>
         </div>
@@ -272,6 +293,40 @@
                     closeSidebar();
                 }
             });
+        });
+
+        // Page loading overlay
+        const pageLoading = document.getElementById('page-loading');
+        function showPageLoading() {
+            if (pageLoading) pageLoading.classList.remove('hidden');
+        }
+        function hidePageLoading() {
+            if (pageLoading) pageLoading.classList.add('hidden');
+        }
+
+        // Show loading when clicking sidebar links (except anchors, new tabs, or with modifier keys)
+        document.querySelectorAll('.sidebar-link').forEach(a => {
+            a.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                const target = this.getAttribute('target');
+                if (!href) return;
+                if (href.startsWith('#')) return;
+                if (target === '_blank') return;
+                if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+                showPageLoading();
+            });
+        });
+
+        // Show loading for forms inside sidebar (e.g., logout)
+        document.querySelectorAll('nav form').forEach(f => {
+            f.addEventListener('submit', () => {
+                showPageLoading();
+            });
+        });
+
+        // Hide overlay when page finishes loading (useful when navigating back/forward)
+        window.addEventListener('pageshow', (ev) => {
+            hidePageLoading();
         });
     </script>
 

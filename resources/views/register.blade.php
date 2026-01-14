@@ -69,10 +69,25 @@
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <i class="fa-solid fa-envelope text-purple-700/70"></i>
                         </div>
-                        <input type="email" name="email" id="email" required 
+                        <input type="email" name="email" id="email" required value="{{ old('email') }}"
                                class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
                                placeholder="you@example.com">
                     </div>
+                    @error('email')<p class="text-red-500 text-sm">{{ $message }}</p>@enderror
+                </div>
+
+                {{-- Phone Input --}}
+                <div>
+                    <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-phone text-purple-700/70"></i>
+                        </div>
+                        <input type="text" name="phone" id="phone" value="{{ old('phone') }}"
+                               class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
+                               placeholder="0812xxxxxxxx">
+                    </div>
+                    @error('phone')<p class="text-red-500 text-sm">{{ $message }}</p>@enderror
                 </div>
 
                 {{-- Password Input --}}

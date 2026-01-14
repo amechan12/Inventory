@@ -3,6 +3,37 @@
 @section('title', 'Riwayat Pinjaman')
 
 @section('content')
+<style>
+    /* Prevent body scroll on mobile devices */
+    @media (max-width: 1024px) {
+        /* Prevent body scroll but allow main content scroll */
+        body.no-scroll {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        /* Allow scroll only in main content area */
+        main {
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+        
+        /* Ensure table container is scrollable */
+        .table-container {
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-x pan-y;
+        }
+    }
+</style>
+
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
 
         {{-- Alert Messages --}}
@@ -59,38 +90,42 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto overflow-y-hidden rounded-xl border border-gray-100 w-full" style="-webkit-overflow-scrolling: touch; max-width:100vw; box-sizing:border-box;">
-            <div class="w-full">
-                <table id="historyTable" class="min-w-max w-full text-sm text-left">
-                <thead class="text-xs uppercase bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-700">
-                    <tr>
-                        <th scope="col" class="px-6 py-4 font-semibold">No. Pinjaman</th>
-                        <th scope="col" class="px-6 py-4 font-semibold">Peminjam</th>
-                        <th scope="col" class="px-6 py-4 font-semibold">Barang</th>
-                        <th scope="col" class="px-6 py-4 font-semibold">Jumlah Item</th>
-                        <th scope="col" class="px-6 py-4 font-semibold">Status</th>
-                        <th scope="col" class="px-6 py-4 font-semibold">Tanggal Pinjam</th>
-                        <th scope="col" class="px-6 py-4 font-semibold">Durasi</th>
-                        <th scope="col" class="px-6 py-4 font-semibold">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
+        <div class="table-container rounded-xl border border-gray-100 w-full overflow-hidden" style="max-height: calc(100vh - 300px); display: flex; flex-direction: column;">
+            <div class="overflow-x-auto overflow-y-hidden flex-shrink-0">
+                <table id="historyTable" class="min-w-full w-full text-sm text-left">
+                    <thead class="text-xs uppercase bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-700 sticky top-0 z-10">
+                        <tr>
+                            <th scope="col" class="px-3 sm:px-6 py-4 font-semibold whitespace-nowrap">No. Pinjaman</th>
+                            <th scope="col" class="px-3 sm:px-6 py-4 font-semibold whitespace-nowrap">Peminjam</th>
+                            <th scope="col" class="px-3 sm:px-6 py-4 font-semibold whitespace-nowrap">Barang</th>
+                            <th scope="col" class="px-3 sm:px-6 py-4 font-semibold whitespace-nowrap">Jumlah Item</th>
+                            <th scope="col" class="px-3 sm:px-6 py-4 font-semibold whitespace-nowrap">Status</th>
+                            <th scope="col" class="px-3 sm:px-6 py-4 font-semibold whitespace-nowrap">Tanggal Pinjam</th>
+                            <th scope="col" class="px-3 sm:px-6 py-4 font-semibold whitespace-nowrap">Durasi</th>
+                            <th scope="col" class="px-3 sm:px-6 py-4 font-semibold whitespace-nowrap">Aksi</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="overflow-x-auto overflow-y-auto flex-1" style="-webkit-overflow-scrolling: touch; touch-action: pan-x pan-y;">
+                <table id="historyTableBody" class="min-w-full w-full text-sm text-left">
+                    <tbody>
                     @forelse ($transactions as $trx)
                         <tr class="bg-white border-b hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-purple-50/50 transition-all">
-                            <th scope="row" class="px-6 py-4 font-semibold text-indigo-600">
+                            <th scope="row" class="px-3 sm:px-6 py-4 font-semibold text-indigo-600 whitespace-nowrap">
                                 {{ $trx->invoice_number }}
                             </th>
-                            <td class="px-6 py-4 text-gray-700">{{ $trx->user->name ?? 'N/A' }}</td>
-                            <td class="px-6 py-4 text-gray-700">
-                                {{ $trx->products->first()->name ?? 'N/A' }}
+                            <td class="px-3 sm:px-6 py-4 text-gray-700 whitespace-nowrap">{{ $trx->user->name ?? 'N/A' }}</td>
+                            <td class="px-3 sm:px-6 py-4 text-gray-700">
+                                <span class="whitespace-nowrap">{{ $trx->products->first()->name ?? 'N/A' }}</span>
                                 @if($trx->products->count() > 1)
                                     <span class="text-gray-500 text-xs">+{{ $trx->products->count() - 1 }} lainnya</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-gray-700">
+                            <td class="px-3 sm:px-6 py-4 text-gray-700 whitespace-nowrap">
                                 {{ $trx->products->sum('pivot.quantity') }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 sm:px-6 py-4">
                                 @php
                                     $statusClasses = [
                                         'pending' => 'bg-orange-100 text-orange-700',
@@ -111,26 +146,26 @@
                                     {{ $statusLabels[$trx->status] ?? ucfirst($trx->status) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-gray-600">
+                            <td class="px-3 sm:px-6 py-4 text-gray-600 whitespace-nowrap">
                                 {{ $trx->borrow_date ? $trx->borrow_date->format('d/m/Y') : $trx->created_at->format('d/m/Y') }}
                             </td>
-                            <td class="px-6 py-4 text-gray-600">
+                            <td class="px-3 sm:px-6 py-4 text-gray-600 whitespace-nowrap">
                                 {{ $trx->duration ?? '-' }} hari
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="flex gap-2">
-                                    <button class="detail-btn px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:shadow-md transition-all text-xs font-semibold"
+                            <td class="px-3 sm:px-6 py-4">
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <button class="detail-btn px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:shadow-md transition-all text-xs font-semibold whitespace-nowrap"
                                         data-transaction-id="{{ $trx->id }}">
-                                        <i class="fa-solid fa-eye mr-1"></i>Detail
+                                        <i class="fa-solid fa-eye mr-1"></i><span class="hidden sm:inline">Detail</span><span class="sm:hidden">Detail</span>
                                     </button>
 
                                     @if (in_array(Auth::user()->role, ['kasir', 'pengelola']) && in_array($trx->status, ['cancelled', 'returned']))
                                         <form action="{{ route('history.destroy', $trx->id) }}" method="POST" class="inline delete-form">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="delete-btn px-4 py-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg hover:shadow-md transition-all text-xs font-semibold"
+                                            <button type="submit" class="delete-btn px-3 sm:px-4 py-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg hover:shadow-md transition-all text-xs font-semibold whitespace-nowrap"
                                                 data-invoice="{{ $trx->invoice_number }}">
-                                                <i class="fa-solid fa-trash mr-1"></i>Hapus
+                                                <i class="fa-solid fa-trash mr-1"></i><span class="hidden sm:inline">Hapus</span><span class="sm:hidden">Hapus</span>
                                             </button>
                                         </form>
                                     @endif
@@ -151,8 +186,9 @@
                             </td>
                         </tr>
                     @endforelse
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -274,6 +310,29 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Prevent body scroll on mobile devices
+            if (window.innerWidth <= 1024) {
+                document.body.classList.add('no-scroll');
+                
+                // Prevent touchmove on body except in scrollable containers
+                document.body.addEventListener('touchmove', function(e) {
+                    const target = e.target;
+                    const isScrollable = target.closest('.table-container') || 
+                                        target.closest('main') ||
+                                        target.closest('.overflow-y-auto') ||
+                                        target.closest('.overflow-auto');
+                    
+                    if (!isScrollable) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+                
+                // Cleanup on page unload
+                window.addEventListener('beforeunload', function() {
+                    document.body.classList.remove('no-scroll');
+                });
+            }
+            
             const exportButton = document.getElementById('exportButton');
             const deleteModal = document.getElementById('deleteModal');
             const detailModal = document.getElementById('detailModal');
@@ -285,8 +344,14 @@
             let currentForm = null;
 
             exportButton.addEventListener('click', function() {
-                let table = document.getElementById('historyTable');
-                let workbook = XLSX.utils.table_to_book(table, { sheet: "Riwayat" });
+                // Combine thead and tbody for export
+                let theadTable = document.getElementById('historyTable');
+                let tbodyTable = document.getElementById('historyTableBody');
+                let combinedTable = theadTable.cloneNode(true);
+                let tbody = combinedTable.querySelector('tbody') || combinedTable.createTBody();
+                tbody.innerHTML = tbodyTable.querySelector('tbody').innerHTML;
+                
+                let workbook = XLSX.utils.table_to_book(combinedTable, { sheet: "Riwayat" });
                 let excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
                 saveAs(new Blob([excelBuffer], { type: "application/octet-stream" }), `Riwayat Pinjaman - {{ date('Y-m-d') }}.xlsx`);
             });
@@ -399,7 +464,7 @@
 
             (function() {
                 const search = document.querySelector('input[name="search"]');
-                const tbody = document.querySelector('#historyTable tbody');
+                const tbody = document.querySelector('#historyTableBody tbody');
                 if (!search || !tbody) {
                     // Still run the alert cleanup below
                 } else {

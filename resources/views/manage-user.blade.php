@@ -3,6 +3,37 @@
 @section('title', 'Kelola Pengguna')
 
 @section('content')
+<style>
+    /* Prevent body scroll on mobile devices */
+    @media (max-width: 1024px) {
+        /* Prevent body scroll but allow main content scroll */
+        body.no-scroll {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        /* Allow scroll only in main content area */
+        main {
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+        
+        /* Ensure table container is scrollable */
+        .table-container {
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-x pan-y;
+        }
+    }
+</style>
+
 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
 
     <div class="flex items-center gap-3 mb-6">
@@ -24,33 +55,37 @@
         </div>
     @endif
 
-    <div class="overflow-x-auto overflow-y-hidden rounded-xl border border-gray-100 w-full" style="-webkit-overflow-scrolling: touch; max-width:100vw; box-sizing:border-box;">
-        <div class="    w-full">
-            <table class="min-w-max w-full text-sm text-left">
-            <thead class="text-xs uppercase bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-700">
-                <tr>
-                    <th scope="col" class="px-6 py-4 font-semibold">Pengguna</th>
-                    <th scope="col" class="px-6 py-4 font-semibold">Email</th>
-                    <th scope="col" class="px-6 py-4 font-semibold">Role Saat Ini</th>
-                    <th scope="col" class="px-6 py-4 font-semibold">Ganti Role</th>
-                </tr>
-            </thead>
-            <tbody>
+    <div class="table-container rounded-xl border border-gray-100 w-full overflow-hidden" style="max-height: calc(100vh - 300px); display: flex; flex-direction: column;">
+        <div class="overflow-x-auto overflow-y-hidden flex-shrink-0">
+            <table class="min-w-full w-full text-sm text-left">
+                <thead class="text-xs uppercase bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-700 sticky top-0 z-10">
+                    <tr>
+                        <th scope="col" class="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Pengguna</th>
+                        <th scope="col" class="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Email</th>
+                        <th scope="col" class="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Role Saat Ini</th>
+                        <th scope="col" class="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Ganti Role</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="overflow-x-auto overflow-y-auto flex-1" style="-webkit-overflow-scrolling: touch; touch-action: pan-x pan-y;">
+            <table class="min-w-full w-full text-sm text-left">
+                <tbody>
                 @forelse ($users as $user)
                 <tr class="bg-white border-b hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-purple-50/50 transition-all">
-                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                        <div class="flex items-center gap-4">
-                            <img class="h-12 w-12 rounded-xl object-cover border-2 border-indigo-100 shadow-sm"
+                    <th scope="row" class="px-4 sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                        <div class="flex items-center gap-2 sm:gap-4">
+                            <img class="h-10 w-10 sm:h-12 sm:w-12 rounded-xl object-cover border-2 border-indigo-100 shadow-sm flex-shrink-0"
                                  src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=6366f1&color=fff' }}"
                                  alt="{{ $user->name }}">
-                            <div>
-                                <div class="font-semibold text-gray-800">{{ $user->name }}</div>
+                            <div class="min-w-0">
+                                <div class="font-semibold text-gray-800 truncate">{{ $user->name }}</div>
                                 <div class="text-xs text-gray-500">ID: #{{ $user->id }}</div>
                             </div>
                         </div>
                     </th>
-                    <td class="px-6 py-4 text-gray-600">{{ $user->email }}</td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 sm:px-6 py-4 text-gray-600 whitespace-nowrap">{{ $user->email }}</td>
+                    <td class="px-4 sm:px-6 py-4">
                         <span class="px-3 py-1.5 font-semibold text-xs rounded-full
                             {{ $user->role == 'pengelola' ? 'bg-gradient-to-r from-red-100 to-rose-100 text-red-700' : '' }}
                             {{ $user->role == 'kasir' ? 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-700' : '' }}
@@ -62,17 +97,17 @@
                             {{ ucfirst($user->role) }}
                         </span>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 sm:px-6 py-4">
                         <form action="{{ route('users.update.role', $user->id) }}" method="POST">
                             @csrf
                             @method('PUT')
-                            <div class="flex items-center gap-3">
-                                <select name="role" class="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-medium">
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                                <select name="role" class="flex-1 px-3 sm:px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-medium">
                                     <option value="anggota" {{ $user->role == 'anggota' ? 'selected' : '' }}>👤 Anggota</option>
                                     <option value="pengelola" {{ $user->role == 'pengelola' ? 'selected' : '' }}>👑 Pengelola</option>
                                 </select>
-                                <button type="submit" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all text-sm whitespace-nowrap">
-                                    <i class="fa-solid fa-save mr-1"></i>Simpan
+                                <button type="submit" class="px-3 sm:px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all text-sm whitespace-nowrap">
+                                    <i class="fa-solid fa-save mr-1"></i><span class="hidden sm:inline">Simpan</span><span class="sm:hidden">Simpan</span>
                                 </button>
                             </div>
                         </form>
@@ -86,12 +121,38 @@
                     </td>
                 </tr>
                 @endforelse
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<script>
+    <script>
+    // Prevent body scroll on mobile devices
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.innerWidth <= 1024) {
+            document.body.classList.add('no-scroll');
+            
+            // Prevent touchmove on body except in scrollable containers
+            document.body.addEventListener('touchmove', function(e) {
+                const target = e.target;
+                const isScrollable = target.closest('.table-container') || 
+                                    target.closest('main') ||
+                                    target.closest('.overflow-y-auto') ||
+                                    target.closest('.overflow-auto');
+                
+                if (!isScrollable) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Cleanup on page unload
+            window.addEventListener('beforeunload', function() {
+                document.body.classList.remove('no-scroll');
+            });
+        }
+    });
+    
     // Alert auto-dismiss
     setTimeout(function() {
         const alerts = document.querySelectorAll('.bg-gradient-to-r');
@@ -118,7 +179,7 @@
             const search = document.querySelector('input[name="search"]');
             if (!search) return;
 
-            const tbody = document.querySelector('table tbody');
+            const tbody = document.querySelector('tbody');
             if (!tbody) return;
 
             const userRows = Array.from(tbody.querySelectorAll('tr'));
