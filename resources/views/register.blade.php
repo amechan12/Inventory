@@ -21,7 +21,7 @@
 <body class="min-h-screen flex items-center justify-center p-4 relative overflow-auto">
 
     <style>
-        .bg-anim { position: absolute; inset: 0; z-index: 0; background: linear-gradient(135deg, rgba(99,102,241,0.03) 0%, rgba(167,139,250,0.02) 50%); }
+        .bg-anim { position: absolute; inset: 0; z-index: 0; background: linear-gradient(135deg, rgba(0,120,254,0.03) 0%, rgba(0,86,179,0.02) 50%); }
         #tsparticles { width: 100%; height: 100%; }
         .bg-anim::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.62), rgba(255,255,255,0.36)); pointer-events: none; }
     </style>
@@ -34,12 +34,12 @@
         <div class="bg-white/40 backdrop-blur-md rounded-3xl p-8 border border-white/20" style="box-shadow: 0 12px 30px rgba(124,58,237,0.12);">
             {{-- Logo & Branding --}}
             <div class="text-center mb-8">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-500 p-1">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center overflow-hidden p-1" style="background: linear-gradient(135deg, #0078fe 0%, #0056b3 100%);">
                     <div class="w-full h-full rounded-xl bg-white/10 flex items-center justify-center">
                         <img src="{{ asset('logo.png') }}" alt="Logo" class="w-4/5 h-4/5 object-contain">
                     </div>
                 </div>
-                <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                <h1 class="text-3xl font-bold mb-2" style="background: linear-gradient(to right, #0078fe, #0056b3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                     Enuma Vault
                 </h1>
                 <h2 class="text-xl font-semibold text-purple-900/90">Buat Akun Baru</h2>

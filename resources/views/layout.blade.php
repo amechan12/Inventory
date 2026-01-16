@@ -11,7 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#0078fe">
     <link rel="apple-touch-icon" href="/images/icons/icon-192x192.png">
 
     <style>
@@ -45,9 +45,9 @@
 
         /* Active Sidebar Link */
         .sidebar-link.active {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            background: #0078fe;
             color: white;
-            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(0, 120, 254, 0.3);
             transform: scale(1.05);
         }
 
@@ -63,12 +63,12 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            background: #0078fe;
             border-radius: 100px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+            background: #0056b3;
         }
 
         /* Mobile Menu Animation */
@@ -85,7 +85,7 @@
     </style>
 </head>
 
-<body class="min-h-screen" style="background-image: url('{{ asset('background1.jpeg') }}'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;">
+<body class="min-h-screen" style="background-image: url('{{ asset('background1.png') }}'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;">
 
     <!-- Page Loading Overlay -->
     <div id="page-loading" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
@@ -137,7 +137,7 @@
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-3">
                         <img class="w-10 h-10 rounded-xl object-cover shadow-md"
-                            src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=6366f1&color=fff' }}"
+                            src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=0078fe&color=fff' }}"
                             alt="{{ Auth::user()->name }}">
                         <div class="hidden md:block">
                             <p class="text-sm font-semibold text-gray-800">{{ Auth::user()->name }}</p>

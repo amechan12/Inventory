@@ -57,7 +57,7 @@
     <!-- tsParticles background container (replaces SVG shapes) -->
     <style>
         /* tsParticles background container */
-        .bg-anim { position: absolute; inset: 0; z-index: 0; background: linear-gradient(135deg, rgba(99,102,241,0.03) 0%, rgba(167,139,250,0.02) 50%); }
+        .bg-anim { position: absolute; inset: 0; z-index: 0; background: linear-gradient(135deg, rgba(0,120,254,0.03) 0%, rgba(0,86,179,0.02) 50%); }
         #tsparticles { width: 100%; height: 100%; }
         .bg-anim::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.62), rgba(255,255,255,0.36)); pointer-events: none; }
     </style>
@@ -70,12 +70,12 @@
         <div class="bg-white/40 backdrop-blur-md rounded-3xl p-8 border border-white/20" style="box-shadow: 0 12px 30px rgba(124,58,237,0.12);">
             {{-- Logo & Branding --}}
             <div class="text-center mb-8">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-500 p-1">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center overflow-hidden p-1" style="background: linear-gradient(135deg, #0078fe 0%, #0056b3 100%);" >
                     <div class="w-full h-full rounded-xl bg-white/10 flex items-center justify-center">
                         <img src="{{ asset('logo.png') }}" alt="Logo" class="w-4/5 h-4/5 object-contain">
                     </div>
                 </div>
-                <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                <h1 class="text-3xl font-bold mb-2" style="background: linear-gradient(to right, #0078fe, #0056b3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                     Enuma Vault
                 </h1>
                 <h2 class="text-xl font-semibold text-purple-900/90">Selamat Datang Kembali</h2>
@@ -127,7 +127,7 @@
                 {{-- Submit Button --}}
                 <div>
                     <button type="submit" 
-                            class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-base font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:shadow-lg transform hover:-translate-y-0.5 transition-all">
+                            class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-base font-semibold text-white hover:shadow-lg transform hover:-translate-y-0.5 transition-all" style="background: linear-gradient(to right, #0078fe, #0056b3);">
                         <i class="fa-solid fa-right-to-bracket mr-2"></i>
                         Masuk
                     </button>
@@ -158,7 +158,7 @@
                 background: { color: { value: 'transparent' } },
                 particles: {
                     number: { value: 30, density: { enable: true, area: 800 } },
-                    color: { value: ['#7c3aed', '#8b5cf6', '#a78bfa', '#fb7185'] },
+                    color: { value: ['#0078fe', '#0056b3', '#1e90ff', '#00bfff'] },
                     shape: { type: 'circle' },
                     opacity: { value: 0.7, random: { enable: true, minimumValue: 0.3 } },
                     size: { value: { min: 20, max: 60 }, animation: { enable: true, speed: 6, minimumValue: 20, sync: false } },

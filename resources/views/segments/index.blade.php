@@ -8,7 +8,8 @@
     @endphp
     <div class="mb-6">
         <h1
-            class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            class="text-2xl md:text-3xl font-bold"
+            style="background: linear-gradient(to right, #0078fe, #0056b3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
             <i class="fa-solid fa-clipboard-list mr-3"></i>Kelola Segmen
         </h1>
     </div>

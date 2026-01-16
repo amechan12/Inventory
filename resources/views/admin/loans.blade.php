@@ -66,10 +66,10 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600">Sedang Dipinjam</p>
-                    <p class="text-2xl font-bold text-indigo-600">{{ $stats['active_loans'] }}</p>
+                    <p class="text-2xl font-bold" style="color: #0078fe;">{{ $stats['active_loans'] }}</p>
                 </div>
-                <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <i class="fa-solid fa-box text-indigo-600 text-xl"></i>
+                <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: rgba(0,120,254,0.1);">
+                    <i class="fa-solid fa-box text-xl" style="color: #0078fe;"></i>
                 </div>
             </div>
         </div>
@@ -77,7 +77,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600">Total Item Dipinjam</p>
-                    <p class="text-2xl font-bold text-purple-600">{{ $stats['total_items_borrowed'] }}</p>
+                    <p class="text-2xl font-bold" style="color: #0078fe;">{{ $stats['total_items_borrowed'] }}</p>
                 </div>
                 <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
                     <i class="fa-solid fa-boxes text-purple-600 text-xl"></i>

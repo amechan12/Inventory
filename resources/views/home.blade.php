@@ -95,7 +95,7 @@
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <a class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group" href="/manage">
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform" style="background-color: #0078fe;">
                 <i class="fa-solid fa-boxes text-xl text-white"></i>
             </div>
             <div class="text-xs text-gray-600 mb-1">Total Barang</div>
@@ -125,7 +125,7 @@
         </a>
 
         <a class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group" href="/history">
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform">
+            <div class="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform"  style="background-color: #0078fe;">
                 <i class="fa-solid fa-box text-xl text-white"></i>
             </div>
             <div class="text-xs text-gray-600 mb-1">Sedang Dipinjam</div>

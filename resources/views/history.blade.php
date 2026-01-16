@@ -212,7 +212,7 @@
                 </div>
 
                 <div id="detailContent" class="hidden">
-                    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl mb-6 border border-indigo-100">
+                    <div class="p-6 rounded-xl mb-6" style="background: linear-gradient(to right, rgba(0,120,254,0.05), rgba(0,86,179,0.05)); border: 1px solid rgba(0,120,254,0.2);">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <div class="mb-4">

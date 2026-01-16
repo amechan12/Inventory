@@ -76,7 +76,7 @@
                     <th scope="row" class="px-4 sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                         <div class="flex items-center gap-2 sm:gap-4">
                             <img class="h-10 w-10 sm:h-12 sm:w-12 rounded-xl object-cover border-2 border-indigo-100 shadow-sm flex-shrink-0"
-                                 src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=6366f1&color=fff' }}"
+                                 src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=0078fe&color=fff' }}"
                                  alt="{{ $user->name }}">
                             <div class="min-w-0">
                                 <div class="font-semibold text-gray-800 truncate">{{ $user->name }}</div>
