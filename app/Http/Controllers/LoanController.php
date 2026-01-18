@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Segment;
 use App\Models\Transaction;
+use App\Traits\SegmentTokenTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +13,7 @@ use Carbon\Carbon;
 
 class LoanController extends Controller
 {
+    use SegmentTokenTrait;
     // Menampilkan halaman peminjaman
     public function borrow(Request $request)
     {
@@ -97,7 +100,14 @@ class LoanController extends Controller
             ];
         }
 
-        return view('loan.borrow', compact('products', 'categories'));
+        // Ambil pinjaman yang sedang diajukan (pending) oleh user
+        $pendingLoans = Transaction::where('user_id', Auth::id())
+            ->where('status', 'pending')
+            ->with('products')
+            ->latest()
+            ->get();
+
+        return view('loan.borrow', compact('products', 'categories', 'pendingLoans'));
     }
 
     // API untuk mendapatkan info produk via QR
@@ -244,6 +254,43 @@ class LoanController extends Controller
         ]);
     }
 
+    // Batalkan peminjaman (menghapus dari pending)
+    public function cancelBorrow($id, Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $transaction = Transaction::where('id', $id)
+                ->where('user_id', Auth::id())
+                ->where('status', 'pending')
+                ->firstOrFail();
+
+            // Kembalikan reserved_stock ke stok normal
+            foreach ($transaction->products as $product) {
+                $quantity = $product->pivot->quantity;
+                $product->decrement('reserved_stock', $quantity);
+            }
+
+            // Hapus transaksi
+            $transaction->delete();
+
+            DB::commit();
+            
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'Peminjaman berhasil dibatalkan']);
+            }
+
+            return back()->with('success', 'Peminjaman berhasil dibatalkan');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
+            }
+            return back()->with('error', 'Pembatalan peminjaman gagal: ' . $e->getMessage());
+        }
+    }
+
     // Submit pengembalian (status: returning)
     public function submitReturn(Request $request)
     {
@@ -266,9 +313,11 @@ class LoanController extends Controller
 
             DB::commit();
             
-            // If the submission included a segment_id (submitted from segment return page), redirect back to that segment return page
+            // If the submission included a segment_id (submitted from segment return page), redirect back to that segment return page with encrypted token
             if ($request->filled('segment_id')) {
-                return redirect()->route('segments.return', $request->input('segment_id'))
+                $segment = Segment::findOrFail($request->input('segment_id'));
+                $token = $this->generateSegmentReturnToken($segment);
+                return redirect()->route('segments.return', $token)
                     ->with('success', 'Pengajuan pengembalian berhasil dikirim. Admin akan memverifikasi barang.');
             }
 

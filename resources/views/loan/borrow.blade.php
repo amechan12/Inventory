@@ -32,164 +32,96 @@
         </div>
     @endif
 
-    {{-- Replicated Shop layout for Borrow (adapted) --}}
-    {{-- Category Filter --}}
-    {{-- @if (isset($categories))
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-6">
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ request()->fullUrlWithQuery(['category' => null, 'page' => null]) }}"
-                    class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ !request('category') ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
-                    <i class="fa-solid fa-th-large mr-2"></i>Semua
-                </a>
-                @foreach ($categories as $category)
-                    <a href="{{ request()->fullUrlWithQuery(['category' => $category['slug'], 'page' => null]) }}"
-                        class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ request('category') === $category['slug'] ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
-                        <i class="{{ $category['icon'] ?? 'fa-solid fa-tag' }} mr-2"></i>{{ $category['name'] }}
-                    </a>
-                @endforeach
+    <div class="max-w-6xl mx-auto">
+
+        <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
+            <i class="fa-solid fa-shopping-cart mr-3"></i>Pinjam Barang
+        </h1>
+
+        {{-- Cart Section --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Keranjang Pinjaman</h2>
+
+            {{-- QR Scanner Button --}}
+            <div class="mb-6">
+                <button id="qr-scanner-btn" class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-4 px-6 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-qrcode text-2xl"></i>
+                    <span class="text-lg">Scan QR Code Barang</span>
+                </button>
+                <p class="mt-3 text-sm text-gray-500">Tip: <strong>Scan QR barang</strong> untuk mengajukan peminjaman barang.</p>
             </div>
+
+            <form id="checkout-form">
+                @csrf
+                <input type="hidden" name="cart" id="cart-input">
+
+                <div id="cart-items" class="space-y-3 mb-6"></div>
+
+                <button type="submit" id="checkout-btn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <i class="fa-solid fa-check mr-2"></i>Ajukan Pinjam (Semua Item)
+                </button>
+            </form>
         </div>
-    @endif --}}
 
+        {{-- Pending Loans Section --}}
+        @if ($pendingLoans && $pendingLoans->count() > 0)
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mt-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Peminjaman Menunggu Persetujuan</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @foreach ($pendingLoans as $loan)
+                        <div class="border border-yellow-200 rounded-xl p-4 hover:shadow-md transition-all bg-gradient-to-br from-yellow-50 to-white">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-gray-800 mb-1">
+                                        {{ $loan->products->first()->name ?? 'Barang' }}
+                                        @if($loan->products->count() > 1)
+                                            <span class="text-xs text-gray-500">+{{ $loan->products->count() - 1 }} lainnya</span>
+                                        @endif
+                                    </h3>
+                                    <p class="text-sm text-gray-600">
+                                        <span class="font-semibold">No. Pengajuan:</span> {{ $loan->invoice_number }}
+                                    </p>
+                                    <p class="text-sm text-gray-600">
+                                        <span class="font-semibold">Tanggal Ajuan:</span> {{ $loan->created_at->format('d/m/Y H:i') }}
+                                    </p>
+                                    <p class="text-sm text-gray-600">
+                                        <span class="font-semibold">Durasi:</span> {{ $loan->duration }} hari
+                                    </p>
+                                    <p class="text-sm text-gray-600">
+                                        <span class="font-semibold">Alasan:</span> {{ $loan->borrow_reason }}
+                                    </p>
+                                    <p class="text-sm text-gray-600 mt-2">
+                                        <span class="font-semibold">Jumlah Item:</span> {{ $loan->products->sum('pivot.quantity') }}
+                                    </p>
 
+                                    <div class="mt-3">
+                                        <ul class="text-sm text-gray-700 space-y-1">
+                                            @foreach($loan->products as $p)
+                                                <li>{{ $p->name }} &times; <strong>{{ $p->pivot->quantity }}</strong></li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
 
-    <div class="flex flex-col lg:flex-row lg:space-x-6">
-        {{-- Products Grid --}}
-        {{-- <div class="w-full lg:w-2/3 order-2 lg:order-1">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                <div>
-                    <h1 class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                        @if (request('category'))
-                            {{ request('category') }}
-                        @elseif(request('search'))
-                            Pencarian: "{{ request('search') }}"
-                        @else
-                            Semua Produk
-                        @endif
-                    </h1>
-                    @if (request('search') || request('category'))
-                        <p class="text-sm text-gray-500 mt-1">{{ $products->total() ?? $products->count() }} produk ditemukan</p>
-                    @endif
-                </div>
-
-                <select id="sort" onchange="applySorting(this.value)"
-                    class="text-sm border border-gray-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="newest" {{ request('sort') === 'newest' ? 'selected' : '' }}>Terbaru</option>
-                    <option value="oldest" {{ request('sort') === 'oldest' ? 'selected' : '' }}>Terlama</option>
-                    <option value="price_low" {{ request('sort') === 'price_low' ? 'selected' : '' }}>Harga Terendah</option>
-                    <option value="price_high" {{ request('sort') === 'price_high' ? 'selected' : '' }}>Harga Tertinggi</option>
-                    <option value="name_asc" {{ request('sort') === 'name_asc' ? 'selected' : '' }}>Nama A-Z</option>
-                    <option value="name_desc" {{ request('sort') === 'name_desc' ? 'selected' : '' }}>Nama Z-A</option>
-                    <option value="stock" {{ request('sort') === 'stock' ? 'selected' : '' }}>Stok Tersedia</option>
-                </select>
-            </div>
-
-            <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                @forelse ($products as $product)
-                    <div class="product-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group"
-                        data-id="{{ $product->id }}" data-name="{{ $product->name }}" data-price="{{ $product->price }}" data-stock="{{ $product->stock }}">
-                        <div class="w-full aspect-square bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
-                            @if ($product->image_path)
-                                <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
-                            @else
-                                <i class="fa-solid fa-image text-6xl text-gray-300"></i>
-                            @endif
-
-                            <div class="absolute inset-0 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                            </div>
-
-                            @if ($product->stock <= 5)
-                                <div class="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
-                                    @if ($product->stock == 0)
-                                        Habis
-                                    @else
-                                        Sisa {{ $product->stock }}
-                                    @endif
+                                    <div class="mt-4">
+                                        <button type="button" class="w-full cancel-pending-loan-btn px-4 py-2 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition-all font-semibold text-sm" data-loan-id="{{ $loan->id }}" data-invoice="{{ $loan->invoice_number }}">
+                                            <i class="fa-solid fa-times mr-1"></i>Batalkan Pengajuan
+                                        </button>
+                                    </div>
                                 </div>
-                            @endif
-
-                            @if ($product->category)
-                                <div class="absolute top-3 right-3 bg-indigo-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
-                                    {{ $product->category }}
+                                <div class="ml-2">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                        <i class="fa-solid fa-clock mr-1"></i>Menunggu
+                                    </span>
                                 </div>
-                            @endif
-                        </div>
-                        <div class="p-4">
-                            <h3 class="text-lg font-bold text-gray-800 line-clamp-2 mb-2">{{ $product->name }}</h3>
-                            <div class="flex justify-between items-center mb-4">
-                                <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
-                                <span class="text-sm text-gray-500">Stok: {{ $product->stock }}</span>
                             </div>
-                            <button
-                                class="add-to-cart-btn w-full py-3 rounded-xl font-semibold transition-all {{ $product->stock <= 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:shadow-lg hover:scale-105' }}"
-                                {{ $product->stock <= 0 ? 'disabled' : '' }}>
-                                @if ($product->stock <= 0)
-                                    <i class="fa-solid fa-ban mr-2"></i>Stok Habis
-                                @else
-                                    <i class="fa-solid fa-cart-plus mr-2"></i>Tambah ke Keranjang
-                                @endif
-                            </button>
                         </div>
-                    </div>
-                @empty
-                    <div class="sm:col-span-2 lg:col-span-2 xl:col-span-3 text-center py-20">
-                        <i class="fa-solid fa-search text-6xl text-gray-300 mb-4"></i>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Tidak ada produk ditemukan</h3>
-                        <p class="text-gray-600 mb-6">
-                            @if (request('search') || request('category'))
-                                Coba ubah filter atau kata kunci pencarian Anda.
-                            @else
-                                Belum ada produk yang tersedia.
-                            @endif
-                        </p>
-                        @if (request('search') || request('category'))
-                            <a href="{{ route('shop.index') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:shadow-lg transition-all">
-                                <i class="fa-solid fa-arrow-left mr-2"></i>
-                                Lihat Semua Produk
-                            </a>
-                        @endif
-                    </div>
-                @endforelse
+                    @endforeach
+                </div>
             </div>
-
-            @if ($products->hasPages())
-                <div class="mt-8">
-                    {{ $products->links() }}
-                </div>
-            @endif
-        </div> --}}
-
-        {{-- Cart Sidebar (Desktop) --}}
-        <div class="w-full">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-0 lg:top-24">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-bold text-gray-800">Keranjang</h2>
-                    <div id="desktop-cart-count" class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-md">0</div>
-                </div>
-
-                {{-- QR Scanner Button --}}
-                <div class="mb-6">
-                    <button id="qr-scanner-btn" class="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-3 px-6 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-qrcode text-xl"></i>
-                        <span>Scan QR Produk</span>
-                    </button>
-                </div>
-
-                <form id="checkout-form">
-                    @csrf
-                    <input type="hidden" name="cart" id="cart-input">
-
-                    <div id="cart-items" class="space-y-3 mb-6 pr-2 max-h-64 overflow-y-auto"></div>
-
-                    <button type="submit" id="checkout-btn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                        <i class="fa-solid fa-check mr-2"></i>Ajukan Pinjam (Semua Item)
-                    </button>
-                </form>
-            </div>
-        </div>
+        @endif
     </div>
 
-
+    {{-- Card --}}
 
     {{-- QR Scanner Modal --}}
     <div id="qr-scanner-modal" class="fixed inset-0 bg-black/70 z-50 hidden">
@@ -239,6 +171,36 @@
         </div>
     </div>
 
+    {{-- Cancel Borrow Modal --}}
+    <div id="cancel-borrow-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
+        <div class="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 transform md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl p-6 w-full max-w-md">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Konfirmasi Pembatalan</h2>
+                <button id="cancel-modal-close-btn" class="text-gray-500 hover:text-gray-700"><i class="fa-solid fa-times text-2xl"></i></button>
+            </div>
+
+            <div class="mb-6">
+                <p class="text-gray-600 mb-4">Apakah Anda yakin ingin membatalkan pengajuan peminjaman ini?</p>
+                <div class="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-4">
+                    <p class="text-sm font-semibold text-yellow-800">
+                        <i class="fa-solid fa-exclamation-triangle mr-2"></i>
+                        Aksi ini tidak dapat dibatalkan. Barang akan dikembalikan ke stok normal.
+                    </p>
+                </div>
+            </div>
+
+            <div id="cancel-loan-invoice" class="mb-4 text-sm">
+                <span class="text-gray-600">Invoice:</span>
+                <span id="cancel-loan-invoice-number" class="font-bold text-gray-800"></span>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button type="button" id="cancel-modal-cancel-btn" class="px-6 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold">Batal</button>
+                <button type="button" id="cancel-modal-confirm-btn" class="px-6 py-2 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white hover:shadow-lg font-semibold">Batalkan Pinjaman</button>
+            </div>
+        </div>
+    </div>
+
     {{-- QR Code Scanner Library --}}
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
@@ -250,6 +212,80 @@
             const productInfo = document.getElementById('product-info');
             const borrowForm = document.getElementById('borrow-form');
             let html5QrCode = null;
+
+            // Cancel Pending Loan Modal
+            const cancelBorrowModal = document.getElementById('cancel-borrow-modal');
+            const cancelModalCloseBtn = document.getElementById('cancel-modal-close-btn');
+            const cancelModalCancelBtn = document.getElementById('cancel-modal-cancel-btn');
+            const cancelModalConfirmBtn = document.getElementById('cancel-modal-confirm-btn');
+            let selectedLoanId = null;
+
+            function openCancelBorrowModal(loanId, invoiceNumber) {
+                selectedLoanId = loanId;
+                document.getElementById('cancel-loan-invoice-number').textContent = invoiceNumber;
+                cancelBorrowModal.classList.remove('hidden');
+            }
+
+            function closeCancelBorrowModal() {
+                cancelBorrowModal.classList.add('hidden');
+                selectedLoanId = null;
+            }
+
+            // Attach handlers to cancel buttons
+            document.querySelectorAll('.cancel-pending-loan-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const loanId = btn.dataset.loanId;
+                    const invoiceNumber = btn.dataset.invoice;
+                    openCancelBorrowModal(loanId, invoiceNumber);
+                });
+            });
+
+            if (cancelModalCloseBtn) {
+                cancelModalCloseBtn.addEventListener('click', closeCancelBorrowModal);
+            }
+
+            if (cancelModalCancelBtn) {
+                cancelModalCancelBtn.addEventListener('click', closeCancelBorrowModal);
+            }
+
+            // Handle cancel confirmation
+            if (cancelModalConfirmBtn) {
+                cancelModalConfirmBtn.addEventListener('click', async () => {
+                    if (!selectedLoanId) return;
+
+                    try {
+                        const token = '{{ csrf_token() }}';
+                        const res = await fetch(`/borrow/${selectedLoanId}/cancel`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': token
+                            }
+                        });
+
+                        const data = await res.json();
+                        
+                        if (res.ok && data.success) {
+                            showNotification('Peminjaman berhasil dibatalkan');
+                            closeCancelBorrowModal();
+                            setTimeout(() => window.location.reload(), 1000);
+                        } else {
+                            showNotification(data.message || 'Gagal membatalkan peminjaman', 'error');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        showNotification('Terjadi kesalahan saat membatalkan peminjaman', 'error');
+                    }
+                });
+            }
+
+            // Close modal on Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && cancelBorrowModal && !cancelBorrowModal.classList.contains('hidden')) {
+                    closeCancelBorrowModal();
+                }
+            });
 
             // QR Scanner Functions
             if (qrScannerBtn && qrScannerModal) {

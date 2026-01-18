@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Segment;
 use App\Models\Transaction;
+use App\Traits\SegmentTokenTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -14,6 +15,7 @@ use chillerlan\QRCode\Common\EccLevel;
 
 class SegmentController extends Controller
 {
+    use SegmentTokenTrait;
     // List segments (pengelola only)
     public function index()
     {
@@ -92,9 +94,21 @@ class SegmentController extends Controller
         return redirect()->route('segments.index')->with('success', 'Segmen berhasil dihapus.');
     }
 
+    // Generate encrypted token untuk segment return page
+    // (moved to SegmentTokenTrait)
+
     // Page untuk pengembalian per segmen
-    public function returnPage(Segment $segment)
+    public function returnPage($token)
     {
+        // Verify token
+        $segmentId = $this->verifySegmentReturnToken($token);
+        
+        if (!$segmentId) {
+            return redirect()->route('home')->with('error', 'Link pengembalian tidak valid atau telah kadaluarsa. Silakan scan QR code yang benar.');
+        }
+
+        $segment = Segment::findOrFail($segmentId);
+        
         // Cari transaksi dengan status returning (menunggu konfirmasi) yang punya produk di segmen ini
         $transactions = Transaction::where('status', 'returning')
             ->whereHas('products', function ($q) use ($segment) {
@@ -121,7 +135,10 @@ class SegmentController extends Controller
     {
         try {
             $segment = Segment::findOrFail($id);
-            $qrUrl = route('segments.return', $segment->id);
+            
+            // Generate encrypted token untuk QR code
+            $token = $this->generateSegmentReturnToken($segment);
+            $qrUrl = route('segments.return', $token);
 
             // Generate QR code dengan Chillerlan
             $qrcode = new QRCode();
@@ -139,7 +156,7 @@ class SegmentController extends Controller
         }
     }
 
-    // API untuk QR segmen (mengembalikan redirect URL)
+    // API untuk QR segmen (mengembalikan redirect URL dengan token terenkripsi)
     public function getByQR($id)
     {
         $segment = Segment::find($id);
@@ -147,9 +164,12 @@ class SegmentController extends Controller
             return response()->json(['success' => false, 'error' => 'Segmen tidak ditemukan'], 404);
         }
 
+        // Generate encrypted token
+        $token = $this->generateSegmentReturnToken($segment);
+
         return response()->json([
             'success' => true,
-            'redirect' => route('segments.return', $segment->id),
+            'redirect' => route('segments.return', $token),
             'segment' => [
                 'id' => $segment->id,
                 'name' => $segment->name,

@@ -31,10 +31,6 @@
                 <i class="fa-solid fa-print mr-2"></i>
                 Print QR Code
             </button>
-            <a href="{{ route('segments.return', $segment->id) }}" class="flex-1 inline-flex items-center justify-center px-6 py-3 bg-indigo-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold">
-                <i class="fa-solid fa-rotate-left mr-2"></i>
-                Buka Halaman Pengembalian
-            </a>
         </div>
 
         <div class="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200 print:hidden">

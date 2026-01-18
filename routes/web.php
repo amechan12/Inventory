@@ -39,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
     // --- RUTE UNTUK SEMUA USER (Peminjaman) ---
     Route::get('/borrow', [LoanController::class, 'borrow'])->name('loan.borrow');
     Route::post('/borrow/submit', [LoanController::class, 'submitBorrow'])->name('loan.submit');
+    Route::post('/borrow/{id}/cancel', [LoanController::class, 'cancelBorrow'])->name('loan.cancel');
     Route::get('/return', [LoanController::class, 'return'])->name('loan.return');
     Route::post('/return/submit', [LoanController::class, 'submitReturn'])->name('loan.return.submit');
 
@@ -76,7 +77,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Return per segment (all authenticated users can access, staff will see confirm actions)
-    Route::get('/return/segment/{segment}', [SegmentController::class, 'returnPage'])->name('segments.return');
+    Route::get('/return/segment/{token}', [SegmentController::class, 'returnPage'])->name('segments.return');
 });
 
 // API Routes untuk QR Scanner (tidak perlu auth karena diakses via AJAX)

@@ -44,7 +44,7 @@
                 <i class="fa-solid fa-qrcode text-2xl"></i>
                 <span class="text-lg">Scan QR Code untuk Kembalikan</span>
             </button>
-            <p class="mt-3 text-sm text-gray-500">Tip: Anda juga dapat <strong>scan QR segmen</strong> (label lokasi) untuk membuka halaman pengembalian per segmen.</p>
+            <p class="mt-3 text-sm text-gray-500">Tip: <strong>Scan QR segmen</strong> untuk membuka halaman pengembalian per segmen.</p>
         </div>
 
         {{-- Active Loans List --}}
