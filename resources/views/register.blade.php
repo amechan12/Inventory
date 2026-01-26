@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,22 +9,48 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
         @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
+
         .animate-gradient {
             background-size: 200% 200%;
             animation: gradient 6s ease infinite;
         }
     </style>
 </head>
+
 <body class="min-h-screen flex items-center justify-center p-4 relative overflow-auto">
 
     <style>
-        .bg-anim { position: absolute; inset: 0; z-index: 0; background: linear-gradient(135deg, rgba(0,120,254,0.03) 0%, rgba(0,86,179,0.02) 50%); }
-        #tsparticles { width: 100%; height: 100%; }
-        .bg-anim::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.62), rgba(255,255,255,0.36)); pointer-events: none; }
+        .bg-anim {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background: linear-gradient(135deg, rgba(0, 120, 254, 0.03) 0%, rgba(0, 86, 179, 0.02) 50%);
+        }
+
+        #tsparticles {
+            width: 100%;
+            height: 100%;
+        }
+
+        .bg-anim::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.36));
+            pointer-events: none;
+        }
     </style>
 
     <div class="bg-anim" aria-hidden="true">
@@ -31,15 +58,18 @@
     </div>
 
     <div class="w-full max-w-md relative z-10">
-        <div class="bg-white/40 backdrop-blur-md rounded-3xl p-8 border border-white/20" style="box-shadow: 0 12px 30px rgba(124,58,237,0.12);">
+        <div class="bg-white/40 backdrop-blur-md rounded-3xl p-8 border border-white/20"
+            style="box-shadow: 0 12px 30px rgba(124,58,237,0.12);">
             {{-- Logo & Branding --}}
             <div class="text-center mb-8">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center overflow-hidden p-1" style="background: linear-gradient(135deg, #0078fe 0%, #0056b3 100%);">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center overflow-hidden p-1"
+                    style="background: linear-gradient(135deg, #0078fe 0%, #0056b3 100%);">
                     <div class="w-full h-full rounded-xl bg-white/10 flex items-center justify-center">
                         <img src="{{ asset('logo.png') }}" alt="Logo" class="w-4/5 h-4/5 object-contain">
                     </div>
                 </div>
-                <h1 class="text-3xl font-bold mb-2" style="background: linear-gradient(to right, #0078fe, #0056b3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                <h1 class="text-3xl font-bold mb-2"
+                    style="background: linear-gradient(to right, #0078fe, #0056b3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                     Enuma Vault
                 </h1>
                 <h2 class="text-xl font-semibold text-purple-900/90">Buat Akun Baru</h2>
@@ -56,9 +86,9 @@
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <i class="fa-solid fa-user text-purple-700/70"></i>
                         </div>
-                        <input type="text" name="name" id="name" required 
-                               class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                               placeholder="John Doe">
+                        <input type="text" name="name" id="name" required
+                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
+                            placeholder="John Doe">
                     </div>
                 </div>
 
@@ -70,8 +100,8 @@
                             <i class="fa-solid fa-envelope text-purple-700/70"></i>
                         </div>
                         <input type="email" name="email" id="email" required value="{{ old('email') }}"
-                               class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                               placeholder="you@example.com">
+                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
+                            placeholder="you@example.com">
                     </div>
                     @error('email')<p class="text-red-500 text-sm">{{ $message }}</p>@enderror
                 </div>
@@ -84,8 +114,8 @@
                             <i class="fa-solid fa-phone text-purple-700/70"></i>
                         </div>
                         <input type="text" name="phone" id="phone" value="{{ old('phone') }}"
-                               class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                               placeholder="0812xxxxxxxx">
+                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
+                            placeholder="0812xxxxxxxx">
                     </div>
                     @error('phone')<p class="text-red-500 text-sm">{{ $message }}</p>@enderror
                 </div>
@@ -98,8 +128,8 @@
                             <i class="fa-solid fa-lock text-purple-700/70"></i>
                         </div>
                         <input type="password" name="password" id="password" required
-                               class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                               placeholder="Minimal 8 karakter">
+                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
+                            placeholder="Minimal 8 karakter">
                     </div>
                     <p class="mt-1 text-xs text-purple-800/60">
                         <i class="fa-solid fa-info-circle mr-1"></i>
@@ -109,21 +139,22 @@
 
                 {{-- Password Confirmation --}}
                 <div>
-                    <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-2">Konfirmasi Password</label>
+                    <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-2">Konfirmasi
+                        Password</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <i class="fa-solid fa-lock text-purple-700/70"></i>
                         </div>
                         <input type="password" name="password_confirmation" id="password_confirmation" required
-                               class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                               placeholder="Ulangi password">
+                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
+                            placeholder="Ulangi password">
                     </div>
                 </div>
 
                 {{-- Submit Button --}}
                 <div class="pt-2">
-                    <button type="submit" 
-                            class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-base font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:shadow-lg transition-all">
+                    <button type="submit"
+                        class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-base font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:shadow-lg transition-all">
                         <i class="fa-solid fa-user-plus mr-2"></i>
                         Daftar Sekarang
                     </button>
@@ -131,7 +162,8 @@
             </form>
 
             {{-- Back to Login Link --}}
-            <p class="mt-6 text-center text-sm text-gray-700">Sudah punya akun? <a href="/login" class="font-semibold text-indigo-600 hover:text-indigo-700">Masuk di sini</a></p>
+            <p class="mt-6 text-center text-sm text-gray-700">Sudah punya akun? <a href="/login"
+                    class="font-semibold text-indigo-600 hover:text-indigo-700">Masuk di sini</a></p>
         </div>
 
     </div>
@@ -164,4 +196,5 @@
     </script>
 
 </body>
+
 </html>

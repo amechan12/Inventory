@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,16 +9,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
         @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
+
         .animate-gradient {
             background-size: 200% 200%;
             animation: gradient 6s ease infinite;
         }
     </style>
 </head>
+
 <body class="min-h-screen flex items-center justify-center p-4 relative overflow-auto">
 
     <style>
@@ -27,29 +38,101 @@
             inset: 0;
             z-index: 0;
             overflow: hidden;
-            background: linear-gradient(135deg, rgba(99,102,241,0.04) 0%, rgba(167,139,250,0.02) 50%, rgba(236,72,153,0.01) 100%);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.04) 0%, rgba(167, 139, 250, 0.02) 50%, rgba(236, 72, 153, 0.01) 100%);
         }
 
-        .bg-svg { width: 100%; height: 100%; display: block; }
+        .bg-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
 
-        .shape { mix-blend-mode: screen; filter: url(#blur); opacity: 0.9; transform-origin: center; transform-box: fill-box; }
+        .shape {
+            mix-blend-mode: screen;
+            filter: url(#blur);
+            opacity: 0.9;
+            transform-origin: center;
+            transform-box: fill-box;
+        }
 
-        .s1 { animation: float1 12s ease-in-out infinite; }
-        .s2 { animation: float2 14s ease-in-out infinite; }
-        .s3 { animation: float3 10s ease-in-out infinite; }
-        .s4 { animation: float4 16s ease-in-out infinite; }
+        .s1 {
+            animation: float1 12s ease-in-out infinite;
+        }
 
-        @keyframes float1 { 0%{transform:translate(0,0) scale(1);}50%{transform:translate(40px,-20px) scale(1.04);}100%{transform:translate(0,0) scale(1);} }
-        @keyframes float2 { 0%{transform:translate(0,0) scale(1);}50%{transform:translate(-30px,18px) scale(1.03);}100%{transform:translate(0,0) scale(1);} }
-        @keyframes float3 { 0%{transform:translate(0,0) scale(1);}50%{transform:translate(20px,-12px) scale(1.02);}100%{transform:translate(0,0) scale(1);} }
-        @keyframes float4 { 0%{transform:translate(0,0) scale(1);}50%{transform:translate(-18px,24px) scale(1.05);}100%{transform:translate(0,0) scale(1);} }
+        .s2 {
+            animation: float2 14s ease-in-out infinite;
+        }
+
+        .s3 {
+            animation: float3 10s ease-in-out infinite;
+        }
+
+        .s4 {
+            animation: float4 16s ease-in-out infinite;
+        }
+
+        @keyframes float1 {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(40px, -20px) scale(1.04);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+
+        @keyframes float2 {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(-30px, 18px) scale(1.03);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+
+        @keyframes float3 {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(20px, -12px) scale(1.02);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+
+        @keyframes float4 {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(-18px, 24px) scale(1.05);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
 
         /* subtle overlay to increase contrast */
         .bg-anim::after {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.62), rgba(255,255,255,0.36));
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.36));
             pointer-events: none;
         }
     </style>
@@ -57,9 +140,25 @@
     <!-- tsParticles background container (replaces SVG shapes) -->
     <style>
         /* tsParticles background container */
-        .bg-anim { position: absolute; inset: 0; z-index: 0; background: linear-gradient(135deg, rgba(0,120,254,0.03) 0%, rgba(0,86,179,0.02) 50%); }
-        #tsparticles { width: 100%; height: 100%; }
-        .bg-anim::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.62), rgba(255,255,255,0.36)); pointer-events: none; }
+        .bg-anim {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background: linear-gradient(135deg, rgba(0, 120, 254, 0.03) 0%, rgba(0, 86, 179, 0.02) 50%);
+        }
+
+        #tsparticles {
+            width: 100%;
+            height: 100%;
+        }
+
+        .bg-anim::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.36));
+            pointer-events: none;
+        }
     </style>
 
     <div class="bg-anim" aria-hidden="true">
@@ -67,15 +166,18 @@
     </div>
 
     <div class="w-full max-w-md relative z-10">
-        <div class="bg-white/40 backdrop-blur-md rounded-3xl p-8 border border-white/20" style="box-shadow: 0 12px 30px rgba(124,58,237,0.12);">
+        <div class="bg-white/40 backdrop-blur-md rounded-3xl p-8 border border-white/20"
+            style="box-shadow: 0 12px 30px rgba(124,58,237,0.12);">
             {{-- Logo & Branding --}}
             <div class="text-center mb-8">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center overflow-hidden p-1" style="background: linear-gradient(135deg, #0078fe 0%, #0056b3 100%);" >
+                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center overflow-hidden p-1"
+                    style="background: linear-gradient(135deg, #0078fe 0%, #0056b3 100%);">
                     <div class="w-full h-full rounded-xl bg-white/10 flex items-center justify-center">
                         <img src="{{ asset('logo.png') }}" alt="Logo" class="w-4/5 h-4/5 object-contain">
                     </div>
                 </div>
-                <h1 class="text-3xl font-bold mb-2" style="background: linear-gradient(to right, #0078fe, #0056b3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                <h1 class="text-3xl font-bold mb-2"
+                    style="background: linear-gradient(to right, #0078fe, #0056b3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                     Enuma Vault
                 </h1>
                 <h2 class="text-xl font-semibold text-purple-900/90">Selamat Datang Kembali</h2>
@@ -84,18 +186,18 @@
 
             <form action="/login" method="POST" class="space-y-5">
                 @csrf
-                
+
                 {{-- Email Input --}}
                 <div>
                     <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-envelope text-purple-700/70"></i>
-                            </div>
-                            <input type="email" name="email" id="email" required 
-                                   class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                                   placeholder="you@example.com">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-envelope text-purple-700/70"></i>
                         </div>
+                        <input type="email" name="email" id="email" required
+                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
+                            placeholder="you@example.com">
+                    </div>
                 </div>
 
                 {{-- Password Input --}}
@@ -106,16 +208,16 @@
                             <i class="fa-solid fa-lock text-purple-700/70"></i>
                         </div>
                         <input type="password" name="password" id="password" required
-                               class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                               placeholder="••••••••">
+                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
+                            placeholder="••••••••">
                     </div>
                 </div>
 
                 {{-- Remember & Forgot --}}
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <input id="remember-me" name="remember-me" type="checkbox" 
-                               class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <input id="remember-me" name="remember-me" type="checkbox"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
                         <label for="remember-me" class="ml-2 block text-sm text-gray-700">Ingat saya</label>
                     </div>
 
@@ -126,8 +228,9 @@
 
                 {{-- Submit Button --}}
                 <div>
-                    <button type="submit" 
-                            class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-base font-semibold text-white hover:shadow-lg transform hover:-translate-y-0.5 transition-all" style="background: linear-gradient(to right, #0078fe, #0056b3);">
+                    <button type="submit"
+                        class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-base font-semibold text-white hover:shadow-lg transform hover:-translate-y-0.5 transition-all"
+                        style="background: linear-gradient(to right, #0078fe, #0056b3);">
                         <i class="fa-solid fa-right-to-bracket mr-2"></i>
                         Masuk
                     </button>
@@ -137,7 +240,8 @@
 
             {{-- Restore single register CTA --}}
             <div class="mt-5">
-                <a href="/register" class="w-full inline-flex justify-center items-center py-3 px-4 rounded-xl border-2 border-white/20 text-purple-900 font-semibold bg-white/10 hover:bg-white/20 transition-all">
+                <a href="/register"
+                    class="w-full inline-flex justify-center items-center py-3 px-4 rounded-xl border-2 border-white/20 text-purple-900 font-semibold bg-white/10 hover:bg-white/20 transition-all">
                     <i class="fa-solid fa-user-plus mr-2"></i>
                     Daftar Sekarang
                 </a>
@@ -175,4 +279,5 @@
     </script>
 
 </body>
+
 </html>

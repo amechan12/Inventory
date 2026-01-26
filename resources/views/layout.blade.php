@@ -85,12 +85,14 @@
     </style>
 </head>
 
-<body class="min-h-screen" style="background-image: url('{{ asset('background1.png') }}'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;">
+<body class="min-h-screen bg-gray-50">
 
     <!-- Page Loading Overlay -->
-    <div id="page-loading" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div id="page-loading"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
         <div class="flex flex-col items-center gap-3">
-            <svg class="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
             </svg>
@@ -108,8 +110,7 @@
                         <i class="fa-solid fa-bars text-xl text-gray-600"></i>
                     </button>
                     <a href="/home" class="flex items-center gap-3">
-                        <div
-                            class="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
                             <img src="{{ asset('logo.png') }}" alt="Logo" class="w-full h-full object-contain">
                         </div>
                         <div>
@@ -122,7 +123,7 @@
                     </a>
                 </div>
 
-                @if (!request()->is('home') && !request()->is('/') && !request()->is('profile') && !request()->is('borrow') && !request()->is('return') && !request()->is('admin/loans') )
+                @if (!request()->is('home') && !request()->is('/') && !request()->is('profile') && !request()->is('borrow') && !request()->is('return') && !request()->is('admin/loans'))
                     <div class="hidden md:block flex-1 max-w-xl mx-8">
                         <form action="{{ url()->current() }}" method="GET" class="relative">
                             <i
@@ -229,11 +230,12 @@
 
             <!-- Main Content -->
             <main class="flex-1 pt-16 lg:pt-8">
-                @if (!request()->is('home') && !request()->is('/') && !request()->is('profile') && !request()->is('borrow') && !request()->is('return') && !request()->is('admin/loans') )
+                @if (!request()->is('home') && !request()->is('/') && !request()->is('profile') && !request()->is('borrow') && !request()->is('return') && !request()->is('admin/loans'))
                     <!-- Mobile: Search in main -->
                     <div class="block md:hidden px-4 mb-4">
                         <form action="{{ url()->current() }}" method="GET" class="relative">
-                            <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <i
+                                class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             <input type="text" name="search" placeholder="Cari..." value="{{ request('search') }}"
                                 class="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all outline-none">
                         </form>
