@@ -73,7 +73,7 @@ class LoanController extends Controller
                 'makanan' => 'fa-solid fa-utensils',
                 'minuman' => 'fa-solid fa-coffee',
                 'snack' => 'fa-solid fa-cookie-bite',
-                'elektronik' => 'fa-solid fa-laptop',
+                'elektronik' => 'fa-solid fa-monitor',
                 'pakaian' => 'fa-solid fa-tshirt',
                 'sepatu' => 'fa-solid fa-shoe-prints',
                 'tas' => 'fa-solid fa-shopping-bag',
@@ -84,7 +84,7 @@ class LoanController extends Controller
                 'mainan' => 'fa-solid fa-puzzle-piece',
             ];
             $categoryLower = strtolower($cat->category);
-            $icon = 'fa-solid fa-tag';
+            $icon = 'fa-solid fa-monitor';
             foreach ($icons as $key => $ic) {
                 if (strpos($categoryLower, $key) !== false) {
                     $icon = $ic;
@@ -114,7 +114,7 @@ class LoanController extends Controller
     public function getProductByQR($id)
     {
         $product = Product::find($id);
-        
+
         if (!$product) {
             return response()->json(['error' => 'Produk tidak ditemukan'], 404);
         }
@@ -151,13 +151,13 @@ class LoanController extends Controller
             DB::beginTransaction();
 
             $product = Product::findOrFail($request->product_id);
-            
+
             // Determine requested quantity
             $quantity = (int) ($request->input('quantity', 1));
 
             // Cek stok tersedia (stock - reserved_stock)
             $availableStock = $product->stock - $product->reserved_stock;
-            
+
             if ($availableStock < $quantity) {
                 throw new \Exception('Barang tidak tersedia dalam jumlah yang diminta. Tersedia: ' . $availableStock);
             }
@@ -189,14 +189,14 @@ class LoanController extends Controller
             }
 
             DB::commit();
-            
+
             if ($request->wantsJson()) {
                 return response()->json(['success' => true]);
             }
 
             return redirect()->route('loan.borrow')
                 ->with('success', 'Pengajuan peminjaman berhasil dikirim. Menunggu persetujuan admin.');
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             if ($request->wantsJson()) {
@@ -224,11 +224,11 @@ class LoanController extends Controller
     public function getLoanByQR($productId)
     {
         $product = Product::findOrFail($productId);
-        
+
         // Cari transaksi yang sedang dipinjam untuk produk ini oleh user yang login
         $transaction = Transaction::where('user_id', Auth::id())
             ->where('status', 'borrowed')
-            ->whereHas('products', function($query) use ($productId) {
+            ->whereHas('products', function ($query) use ($productId) {
                 $query->where('products.id', $productId);
             })
             ->with('products')
@@ -275,13 +275,13 @@ class LoanController extends Controller
             $transaction->delete();
 
             DB::commit();
-            
+
             if ($request->wantsJson()) {
                 return response()->json(['success' => true, 'message' => 'Peminjaman berhasil dibatalkan']);
             }
 
             return back()->with('success', 'Peminjaman berhasil dibatalkan');
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             if ($request->wantsJson()) {
@@ -312,7 +312,7 @@ class LoanController extends Controller
             ]);
 
             DB::commit();
-            
+
             // If the submission included a segment_id (submitted from segment return page), redirect back to that segment return page with encrypted token
             if ($request->filled('segment_id')) {
                 $segment = Segment::findOrFail($request->input('segment_id'));
@@ -323,7 +323,7 @@ class LoanController extends Controller
 
             return redirect()->route('loan.return')
                 ->with('success', 'Pengajuan pengembalian berhasil dikirim. Admin akan memverifikasi barang.');
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Pengajuan pengembalian gagal: ' . $e->getMessage());
@@ -335,15 +335,15 @@ class LoanController extends Controller
     {
         $prefix = 'PIN';
         $date = date('Ymd');
-        
+
         $lastTransaction = Transaction::whereDate('created_at', today())
             ->where('invoice_number', 'like', $prefix . '%')
             ->orderBy('id', 'desc')
             ->first();
-        
-        $sequence = $lastTransaction ? 
+
+        $sequence = $lastTransaction ?
             intval(substr($lastTransaction->invoice_number, -4)) + 1 : 1;
-        
+
         return $prefix . $date . str_pad($sequence, 4, '0', STR_PAD_LEFT);
     }
 }

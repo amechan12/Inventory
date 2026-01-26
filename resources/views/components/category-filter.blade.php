@@ -1,12 +1,14 @@
 {{-- Category Filter Component --}}
-{{-- Usage: @include('components.category-filter', ['categories' => $categories, 'products' => $products, 'totalProducts' => $totalProducts]) --}}
+{{-- Usage: @include('components.category-filter', ['categories' => $categories, 'products' => $products,
+'totalProducts' => $totalProducts]) --}}
 
 <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         {{-- Filter Title & Mobile Product Count --}}
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                <div
+                    class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
                     <i class="fa-solid fa-filter text-white"></i>
                 </div>
                 <div>
@@ -26,7 +28,7 @@
                     <select id="segment-filter-component" class="input-field text-sm w-56">
                         <option value="">-- Semua Segmen --</option>
                         @foreach($segments ?? collect() as $seg)
-                            <option value="{{ $seg->id }}" {{ (string)request('segment') === (string)$seg->id ? 'selected' : '' }}>{{ $seg->name }}</option>
+                            <option value="{{ $seg->id }}" {{ (string) request('segment') === (string) $seg->id ? 'selected' : '' }}>{{ $seg->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -36,8 +38,8 @@
         {{-- Category Filter Buttons --}}
         <div class="flex flex-wrap gap-2">
             {{-- All Categories Button --}}
-            <a href="{{ request()->fullUrlWithQuery(['category' => null, 'page' => null]) }}" 
-               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all {{ !request('category') ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+            <a href="{{ request()->fullUrlWithQuery(['category' => null, 'page' => null]) }}"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all {{ !request('category') ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                 <i class="fa-solid fa-th-large"></i>
                 <span>Semua</span>
                 <span class="bg-white/20 px-2 py-0.5 rounded-full text-xs">{{ $totalProducts ?? 0 }}</span>
@@ -45,13 +47,74 @@
 
             {{-- Dynamic Category Buttons --}}
             @if(isset($categories) && count($categories) > 0)
+                @php
+                    // Helper function to get category icon dynamically
+                    function getCategoryIcon($category)
+                    {
+                        // If icon is already set in data, use it
+                        if (!empty($category['icon'])) {
+                            return $category['icon'];
+                        }
+
+                        // Map category names/slugs to icons
+                        $iconMap = [
+                            // Electronics & Technology
+                            'elektronik' => 'fa-solid fa-plug',
+                            'komputer' => 'fa-solid fa-computer',
+                            'laptop' => 'fa-solid fa-laptop',
+                            'gadget' => 'fa-solid fa-mobile-screen',
+                            'pcb' => 'fa-solid fa-code-branch',
+
+                            // Furniture & Home
+                            'furniture' => 'fa-solid fa-couch',
+                            'mebel' => 'fa-solid fa-chair',
+                            'perabotan' => 'fa-solid fa-house-user',
+
+                            // Stationery & Office
+                            'alat-tulis' => 'fa-solid fa-pen',
+                            'stationery' => 'fa-solid fa-pencil',
+                            'buku' => 'fa-solid fa-book',
+                            'kantor' => 'fa-solid fa-briefcase',
+
+                            // Tools & Equipment
+                            'peralatan' => 'fa-solid fa-wrench',
+                            'tools' => 'fa-solid fa-screwdriver-wrench',
+                            'alat' => 'fa-solid fa-toolbox',
+
+                            // Other
+                            'lainnya' => 'fa-solid fa-ellipsis',
+                            'umum' => 'fa-solid fa-boxes-stacked',
+                        ];
+
+                        // Check by slug first, then name (case-insensitive)
+                        $slug = strtolower($category['slug'] ?? '');
+                        $name = strtolower($category['name'] ?? '');
+
+                        // Direct match
+                        if (isset($iconMap[$slug])) {
+                            return $iconMap[$slug];
+                        }
+
+                        // Partial match in slug or name
+                        foreach ($iconMap as $key => $icon) {
+                            if (str_contains($slug, $key) || str_contains($name, $key)) {
+                                return $icon;
+                            }
+                        }
+
+                        // Default fallback
+                        return 'fa-solid fa-tag';
+                    }
+                @endphp
+
                 @foreach($categories as $category)
-                    <a href="{{ request()->fullUrlWithQuery(['category' => $category['slug'], 'page' => null]) }}" 
-                       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all {{ request('category') === $category['slug'] ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
-                       title="{{ $category['name'] }} ({{ $category['count'] }} produk)">
-                        <i class="{{ $category['icon'] ?? 'fa-solid fa-tag' }}"></i>
+                    <a href="{{ request()->fullUrlWithQuery(['category' => $category['slug'], 'page' => null]) }}"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all {{ request('category') === $category['slug'] ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
+                        title="{{ $category['name'] }} ({{ $category['count'] }} produk)">
+                        <i class="{{ getCategoryIcon($category) }}"></i>
                         <span>{{ $category['name'] }}</span>
-                        <span class="{{ request('category') === $category['slug'] ? 'bg-white/20' : 'bg-gray-200' }} px-2 py-0.5 rounded-full text-xs">{{ $category['count'] }}</span>
+                        <span
+                            class="{{ request('category') === $category['slug'] ? 'bg-white/20' : 'bg-gray-200' }} px-2 py-0.5 rounded-full text-xs">{{ $category['count'] }}</span>
                     </a>
                 @endforeach
             @else
@@ -63,9 +126,9 @@
 
             {{-- Clear Filters Button --}}
             @if(request('category') || request('search') || request('segment'))
-                <a href="{{ url()->current() }}" 
-                   class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-red-50 to-rose-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all"
-                   title="Hapus semua filter">
+                <a href="{{ url()->current() }}"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-red-50 to-rose-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all"
+                    title="Hapus semua filter">
                     <i class="fa-solid fa-times"></i>
                     <span class="hidden sm:inline">Hapus Filter</span>
                 </a>
@@ -90,13 +153,14 @@
                     <i class="fa-solid fa-tag text-indigo-500"></i>
                     Filter aktif:
                 </span>
-                
+
                 @if(request('search'))
-                    <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 rounded-lg text-xs font-semibold border border-blue-200">
+                    <span
+                        class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 rounded-lg text-xs font-semibold border border-blue-200">
                         <i class="fa-solid fa-search"></i>
                         <span>"{{ request('search') }}"</span>
-                        <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" 
-                           class="hover:text-red-600 transition-colors">
+                        <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}"
+                            class="hover:text-red-600 transition-colors">
                             <i class="fa-solid fa-times"></i>
                         </a>
                     </span>
@@ -107,11 +171,12 @@
                         $activeCategory = collect($categories ?? [])->firstWhere('slug', request('category'));
                     @endphp
                     @if($activeCategory)
-                        <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 rounded-lg text-xs font-semibold border border-indigo-200">
-                            <i class="{{ $activeCategory['icon'] ?? 'fa-solid fa-tag' }}"></i>
+                        <span
+                            class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 rounded-lg text-xs font-semibold border border-indigo-200">
+                            <i class="{{ getCategoryIcon($activeCategory) }}"></i>
                             <span>{{ $activeCategory['name'] }}</span>
-                            <a href="{{ request()->fullUrlWithQuery(['category' => null]) }}" 
-                               class="hover:text-red-600 transition-colors">
+                            <a href="{{ request()->fullUrlWithQuery(['category' => null]) }}"
+                                class="hover:text-red-600 transition-colors">
                                 <i class="fa-solid fa-times"></i>
                             </a>
                         </span>
@@ -122,7 +187,7 @@
                     @php
                         $sortLabels = [
                             'oldest' => 'Terlama',
-                            'price_low' => 'Harga Terendah', 
+                            'price_low' => 'Harga Terendah',
                             'price_high' => 'Harga Tertinggi',
                             'name_asc' => 'Nama A-Z',
                             'name_desc' => 'Nama Z-A',
@@ -130,11 +195,12 @@
                         ];
                         $sortLabel = $sortLabels[request('sort')] ?? request('sort');
                     @endphp
-                    <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 rounded-lg text-xs font-semibold border border-green-200">
+                    <span
+                        class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 rounded-lg text-xs font-semibold border border-green-200">
                         <i class="fa-solid fa-sort"></i>
                         <span>{{ $sortLabel }}</span>
-                        <a href="{{ request()->fullUrlWithQuery(['sort' => null]) }}" 
-                           class="hover:text-red-600 transition-colors">
+                        <a href="{{ request()->fullUrlWithQuery(['sort' => null]) }}"
+                            class="hover:text-red-600 transition-colors">
                             <i class="fa-solid fa-times"></i>
                         </a>
                     </span>
@@ -142,14 +208,15 @@
 
                 @if(request('segment'))
                     @php
-                        $activeSegment = $segments->firstWhere('id', (int)request('segment'));
+                        $activeSegment = $segments->firstWhere('id', (int) request('segment'));
                     @endphp
                     @if($activeSegment)
-                        <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 rounded-lg text-xs font-semibold border border-purple-200">
+                        <span
+                            class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 rounded-lg text-xs font-semibold border border-purple-200">
                             <i class="fa-solid fa-location-dot"></i>
                             <span>{{ $activeSegment->name }}</span>
-                            <a href="{{ request()->fullUrlWithQuery(['segment' => null]) }}" 
-                               class="hover:text-red-600 transition-colors">
+                            <a href="{{ request()->fullUrlWithQuery(['segment' => null]) }}"
+                                class="hover:text-red-600 transition-colors">
                                 <i class="fa-solid fa-times"></i>
                             </a>
                         </span>
@@ -158,8 +225,8 @@
 
                 {{-- Quick Clear All Button --}}
                 @if((request('category') || request('search') || request('sort') || request('segment')))
-                    <a href="{{ url()->current() }}" 
-                       class="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-semibold ml-2 px-3 py-1.5 border-2 border-red-200 rounded-lg hover:bg-red-50 transition-all">
+                    <a href="{{ url()->current() }}"
+                        class="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-semibold ml-2 px-3 py-1.5 border-2 border-red-200 rounded-lg hover:bg-red-50 transition-all">
                         <i class="fa-solid fa-refresh"></i>
                         <span>Reset Semua</span>
                     </a>
@@ -171,13 +238,14 @@
     {{-- No Results Message --}}
     @if(isset($products) && $products->count() === 0 && (request('category') || request('search') || request('segment')))
         <div class="mt-4 pt-4 border-t border-gray-100">
-            <div class="flex items-center justify-between bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 rounded-xl p-4">
+            <div
+                class="flex items-center justify-between bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 rounded-xl p-4">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-exclamation-triangle text-yellow-600 text-xl"></i>
                     <span class="text-sm font-medium text-yellow-800">Tidak ada produk yang sesuai dengan filter Anda</span>
                 </div>
-                <a href="{{ url()->current() }}" 
-                   class="px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all text-sm">
+                <a href="{{ url()->current() }}"
+                    class="px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all text-sm">
                     Lihat Semua
                 </a>
             </div>
@@ -186,12 +254,12 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const categoryButtons = document.querySelectorAll('a[href*="category"]');
         const clearButton = document.querySelector('a[href="{{ url()->current() }}"]');
 
         categoryButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
+            button.addEventListener('click', function (e) {
                 if (this.classList.contains('bg-gradient-to-r') && this.classList.contains('from-indigo-500')) {
                     return;
                 }
@@ -199,7 +267,7 @@
                 const originalContent = this.innerHTML;
                 this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span class="hidden sm:inline ml-2">Loading...</span>';
                 this.style.pointerEvents = 'none';
-                
+
                 setTimeout(() => {
                     if (this.style.pointerEvents === 'none') {
                         this.innerHTML = originalContent;
@@ -210,7 +278,7 @@
         });
 
         if (clearButton) {
-            clearButton.addEventListener('click', function(e) {
+            clearButton.addEventListener('click', function (e) {
                 this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span class="ml-2">Clearing...</span>';
                 this.style.pointerEvents = 'none';
             });
