@@ -180,6 +180,26 @@
             </a>
         </div>
 
+        <!-- Additional Charts -->
+        <div class="grid grid-cols-1 lg:grid-rows-1 lg:grid-cols-1 gap-6">
+            <!-- Payment Method Chart -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div class="flex items-center gap-3 mb-6">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+                        <i class="fa-solid fa-hands-holding text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800">Status Pinjaman</h2>
+                        <p class="text-xs text-gray-500">Distribusi Status</p>
+                    </div>
+                </div>
+                <div class="h-80">
+                    <canvas id="paymentMethodChart"></canvas>
+                </div>
+            </div>
+        </div>
+
         <!-- Charts Container -->
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <!-- Daily Sales Chart -->
@@ -217,43 +237,6 @@
                 </div>
                 <div class="h-80">
                     <canvas id="monthlySalesChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Additional Charts -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Payment Method Chart -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <div class="flex items-center gap-3 mb-6">
-                    <div
-                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
-                        <i class="fa-solid fa-hands-holding text-white"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-800">Status Pinjaman</h2>
-                        <p class="text-xs text-gray-500">Distribusi Status</p>
-                    </div>
-                </div>
-                <div class="h-80">
-                    <canvas id="paymentMethodChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Top Products Chart -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <div class="flex items-center gap-3 mb-6">
-                    <div
-                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
-                        <i class="fa-solid fa-trophy text-white"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-800">Barang Paling Sering Dipinjam</h2>
-                        <p class="text-xs text-gray-500">Top 5 Barang</p>
-                    </div>
-                </div>
-                <div class="h-80">
-                    <canvas id="topProductsChart"></canvas>
                 </div>
             </div>
         </div>
@@ -459,66 +442,6 @@
                                 usePointStyle: true,
                                 pointStyle: 'circle'
                             }
-                        }
-                    }
-                }
-            });
-
-            // Top Products Chart
-            const productsCtx = document.getElementById('topProductsChart').getContext('2d');
-            const topProductsChart = new Chart(productsCtx, {
-                type: 'bar',
-                data: {
-                    labels: {!! json_encode($topProductLabels) !!},
-                    datasets: [{
-                        label: 'Jumlah Pinjaman',
-                        data: {!! json_encode($topProductData) !!},
-                        backgroundColor: function (context) {
-                            const chart = context.chart;
-                            const { ctx, chartArea } = chart;
-                            if (!chartArea) return null;
-
-                            const gradient = ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
-                            gradient.addColorStop(0, 'rgba(249, 115, 22, 0.8)');
-                            gradient.addColorStop(1, 'rgba(249, 115, 22, 0.2)');
-                            return gradient;
-                        },
-                        borderColor: 'rgba(249, 115, 22, 1)',
-                        borderWidth: 2,
-                        borderRadius: 10,
-                        borderSkipped: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        y: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    return `${context.dataset.label}: ${context.parsed.x} kali`;
-                                }
-                            },
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            padding: 12,
-                            cornerRadius: 8
-                        },
-                        legend: {
-                            display: false
                         }
                     }
                 }

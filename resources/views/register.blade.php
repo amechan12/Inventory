@@ -8,191 +8,144 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
-        @keyframes gradient {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        .animate-gradient {
-            background-size: 200% 200%;
-            animation: gradient 6s ease infinite;
+        /* Smooth transitions */
+        * {
+            transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
         }
     </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center p-4 relative overflow-auto">
+<body class="h-screen bg-white overflow-hidden">
 
-    <style>
-        .bg-anim {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            background: linear-gradient(135deg, rgba(0, 120, 254, 0.03) 0%, rgba(0, 86, 179, 0.02) 50%);
-        }
-
-        #tsparticles {
-            width: 100%;
-            height: 100%;
-        }
-
-        .bg-anim::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.36));
-            pointer-events: none;
-        }
-    </style>
-
-    <div class="bg-anim" aria-hidden="true">
-        <div id="tsparticles"></div>
-    </div>
-
-    <div class="w-full max-w-md relative z-10">
-        <div class="bg-white/40 backdrop-blur-md rounded-3xl p-8 border border-white/20"
-            style="box-shadow: 0 12px 30px rgba(124,58,237,0.12);">
-            {{-- Logo & Branding --}}
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center overflow-hidden p-1"
-                    style="background: linear-gradient(135deg, #0078fe 0%, #0056b3 100%);">
-                    <div class="w-full h-full rounded-xl bg-white/10 flex items-center justify-center">
-                        <img src="{{ asset('logo.png') }}" alt="Logo" class="w-4/5 h-4/5 object-contain">
+    <div class="h-screen flex">
+        <!-- Left Side - Form -->
+        <div class="flex-1 flex items-center justify-center p-6 lg:p-8 overflow-y-auto">
+            <div class="w-full max-w-md">
+                <!-- Logo -->
+                <div class="mb-4">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden mb-3">
+                        <img src="{{ asset('logo.png') }}" alt="Logo" class="w-12 h-12 object-contain">
                     </div>
-                </div>
-                <h1 class="text-3xl font-bold mb-2"
-                    style="background: linear-gradient(to right, #0078fe, #0056b3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                    Enuma Vault
-                </h1>
-                <h2 class="text-xl font-semibold text-purple-900/90">Buat Akun Baru</h2>
-                <p class="text-purple-800/70 mt-1">Isi data untuk membuat akun baru</p>
-            </div>
 
-            <form action="/register" method="POST" class="space-y-5">
-                @csrf
-
-                {{-- Name Input --}}
-                <div>
-                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-user text-purple-700/70"></i>
-                        </div>
-                        <input type="text" name="name" id="name" required
-                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                            placeholder="John Doe">
-                    </div>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-1">Selamat Datang !</h1>
+                    <p class="text-sm text-gray-600">Daftar untuk mulai meminjam barang.</p>
                 </div>
 
-                {{-- Email Input --}}
-                <div>
-                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-envelope text-purple-700/70"></i>
-                        </div>
+                <form action="/register" method="POST" class="space-y-3">
+                    @csrf
+
+                    <!-- Name Input -->
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-900 mb-1">
+                            Nama Lengkap <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="name" id="name" required value="{{ old('name') }}"
+                            class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 text-sm"
+                            placeholder="Enter your full name">
+                    </div>
+
+                    <!-- Email Input -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-900 mb-1">
+                            Email <span class="text-red-500">*</span>
+                        </label>
                         <input type="email" name="email" id="email" required value="{{ old('email') }}"
-                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                            placeholder="you@example.com">
+                            class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 text-sm"
+                            placeholder="Enter your email address">
+                        @error('email')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    @error('email')<p class="text-red-500 text-sm">{{ $message }}</p>@enderror
-                </div>
 
-                {{-- Phone Input --}}
-                <div>
-                    <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-phone text-purple-700/70"></i>
-                        </div>
+                    <!-- Phone Input -->
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-900 mb-1">
+                            Nomor Telepon
+                        </label>
                         <input type="text" name="phone" id="phone" value="{{ old('phone') }}"
-                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                            placeholder="0812xxxxxxxx">
+                            class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 text-sm"
+                            placeholder="Enter your phone number">
+                        @error('phone')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    @error('phone')<p class="text-red-500 text-sm">{{ $message }}</p>@enderror
-                </div>
 
-                {{-- Password Input --}}
-                <div>
-                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-lock text-purple-700/70"></i>
+                    <!-- Password Input -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-900 mb-1">
+                            Password <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="password" id="password" required
+                                class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 pr-12 text-sm"
+                                placeholder="Minimum 8 characters">
+                            <button type="button" onclick="togglePassword('password', 'password-icon')"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <i id="password-icon" class="fa-regular fa-eye"></i>
+                            </button>
                         </div>
-                        <input type="password" name="password" id="password" required
-                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                            placeholder="Minimal 8 karakter">
                     </div>
-                    <p class="mt-1 text-xs text-purple-800/60">
-                        <i class="fa-solid fa-info-circle mr-1"></i>
-                        Gunakan kombinasi huruf, angka dan simbol
+
+                    <!-- Password Confirmation -->
+                    <div>
+                        <label for="password_confirmation" class="block text-sm font-medium text-gray-900 mb-1">
+                            Konfirmasi Password <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="password_confirmation" id="password_confirmation" required
+                                class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 pr-12 text-sm"
+                                placeholder="Ulangi Password">
+                            <button type="button"
+                                onclick="togglePassword('password_confirmation', 'password-confirmation-icon')"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <i id="password-confirmation-icon" class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-1">
+                        <button type="submit"
+                            class="w-full flex justify-center items-center py-2.5 px-4 rounded-lg shadow-md text-base font-semibold text-white hover:shadow-lg transform hover:-translate-y-0.5 transition-all"
+                            style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);">
+                            Register
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Login Link -->
+                <div class="mt-3 text-center">
+                    <p class="text-gray-600">
+                        Already have an account ?
+                        <a href="/login" class="font-semibold text-indigo-600 hover:text-indigo-500">Login here</a>
                     </p>
                 </div>
-
-                {{-- Password Confirmation --}}
-                <div>
-                    <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-2">Konfirmasi
-                        Password</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-lock text-purple-700/70"></i>
-                        </div>
-                        <input type="password" name="password_confirmation" id="password_confirmation" required
-                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                            placeholder="Ulangi password">
-                    </div>
-                </div>
-
-                {{-- Submit Button --}}
-                <div class="pt-2">
-                    <button type="submit"
-                        class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-base font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:shadow-lg transition-all">
-                        <i class="fa-solid fa-user-plus mr-2"></i>
-                        Daftar Sekarang
-                    </button>
-                </div>
-            </form>
-
-            {{-- Back to Login Link --}}
-            <p class="mt-6 text-center text-sm text-gray-700">Sudah punya akun? <a href="/login"
-                    class="font-semibold text-indigo-600 hover:text-indigo-700">Masuk di sini</a></p>
+            </div>
         </div>
 
+        <!-- Right Side - Illustration -->
+        <div class="hidden lg:flex flex-1 relative overflow-hidden">
+            <img src="{{ asset('auth.png') }}" alt="Illustration" class="w-full h-full object-cover">
+        </div>
     </div>
 
-    <!-- tsParticles scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            tsParticles.load('tsparticles', {
-                fullScreen: { enable: false },
-                detectRetina: true,
-                fpsLimit: 60,
-                background: { color: { value: 'transparent' } },
-                particles: {
-                    number: { value: 30, density: { enable: true, area: 800 } },
-                    color: { value: ['#7c3aed', '#8b5cf6', '#a78bfa', '#fb7185'] },
-                    shape: { type: 'circle' },
-                    opacity: { value: 0.7, random: { enable: true, minimumValue: 0.3 } },
-                    size: { value: { min: 20, max: 60 }, animation: { enable: true, speed: 6, minimumValue: 20, sync: false } },
-                    move: { enable: true, speed: 1.5, direction: 'none', outMode: 'out' },
-                    links: { enable: false }
-                },
-                interactivity: {
-                    detectsOn: 'canvas',
-                    events: { onHover: { enable: true, mode: 'repulse' }, onClick: { enable: false } },
-                    modes: { repulse: { distance: 120, duration: 0.4 } }
-                }
-            });
-        });
+        function togglePassword(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const passwordIcon = document.getElementById(iconId);
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+            }
+        }
     </script>
 
 </body>

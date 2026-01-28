@@ -82,10 +82,69 @@
                 transition: transform 300ms ease-out;
             }
         }
+
+        /* Desktop Sidebar Collapse */
+        #sidebar {
+            transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1), width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #sidebar.collapsed {
+            width: 5rem;
+            padding: 1rem 0.5rem;
+        }
+
+        #sidebar.collapsed .sidebar-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        #sidebar.collapsed nav {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 0.5rem;
+        }
+
+        #sidebar.collapsed .sidebar-link {
+            width: 3.5rem !important;
+            height: 3.5rem !important;
+            min-width: 3.5rem;
+            min-height: 3.5rem;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            gap: 0 !important;
+        }
+
+        #sidebar.collapsed .sidebar-link i {
+            margin: 0 !important;
+        }
+
+        #sidebar.collapsed .sidebar-link.active {
+            transform: scale(1) !important;
+        }
+
+        #sidebar.collapsed .border-t {
+            width: 100%;
+        }
+
+        #sidebar.collapsed nav>.space-y-2 {
+            gap: 0.5rem;
+        }
+
+        .sidebar-text {
+            transition: opacity 200ms, width 200ms;
+            white-space: nowrap;
+        }
     </style>
 </head>
 
-<body class="min-h-screen bg-gray-50">
+<body class="min-h-screen bg-gray-100">
 
     <!-- Page Loading Overlay -->
     <div id="page-loading"
@@ -104,9 +163,13 @@
     <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
         <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Left: Logo & Mobile Menu Toggle -->
+                <!-- Left: Logo & Menu Toggles -->
                 <div class="flex items-center gap-4">
                     <button id="mobile-menu-toggle" class="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-all">
+                        <i class="fa-solid fa-bars text-xl text-gray-600"></i>
+                    </button>
+                    <button id="desktop-menu-toggle"
+                        class="hidden lg:block p-2 rounded-xl hover:bg-gray-100 transition-all">
                         <i class="fa-solid fa-bars text-xl text-gray-600"></i>
                     </button>
                     <a href="/home" class="flex items-center gap-3">
@@ -154,7 +217,7 @@
         <div class="flex gap-6">
             <!-- Sidebar -->
             <aside id="sidebar"
-                class="fixed lg:sticky top-16 lg:top-0 left-0 h-screen lg:h-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-4 z-40 transition-transform duration-300 w-64 -translate-x-full lg:translate-x-0">
+                class="fixed lg:sticky top-16 lg:top-0 left-0 h-[calc(100vh-4rem)] lg:h-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-4 z-40 transition-transform duration-300 w-64 -translate-x-full lg:translate-x-0 overflow-y-auto">
                 <!-- Close Button (Mobile Only) -->
                 <button id="sidebar-close" class="lg:hidden absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100">
                     <i class="fa-solid fa-times text-gray-600"></i>
@@ -164,55 +227,55 @@
                     <a href="/home"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('home') || request()->is('/') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-house text-lg"></i>
-                        <span class="font-medium">Dashboard</span>
+                        <span class="font-medium sidebar-text">Dashboard</span>
                     </a>
 
                     {{-- Menu Peminjaman untuk semua user --}}
                     <a href="{{ route('loan.borrow') }}"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('borrow') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-box text-lg"></i>
-                        <span class="font-medium">Pinjam Barang</span>
+                        <span class="font-medium sidebar-text">Pinjam Barang</span>
                     </a>
 
                     <a href="{{ route('loan.return') }}"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('return') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-rotate-left text-lg"></i>
-                        <span class="font-medium">Kembalikan Barang</span>
+                        <span class="font-medium sidebar-text">Kembalikan Barang</span>
                     </a>
 
                     @if (Auth::user()->role == 'pengelola')
                         <a href="{{ route('admin.loans') }}"
                             class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('admin/loans') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                             <i class="fa-solid fa-clipboard-list text-lg"></i>
-                            <span class="font-medium">Kelola Pinjaman</span>
+                            <span class="font-medium sidebar-text">Kelola Pinjaman</span>
                         </a>
                         <a href="/manage"
                             class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('manage') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                             <i class="fa-solid fa-pen-to-square text-lg"></i>
-                            <span class="font-medium">Kelola Barang</span>
+                            <span class="font-medium sidebar-text">Kelola Barang</span>
                         </a>
                         <a href="{{ route('segments.index') }}"
                             class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('segments*') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                             <i class="fa-solid fa-map-location-dot text-lg"></i>
-                            <span class="font-medium">Kelola Segmen</span>
+                            <span class="font-medium sidebar-text">Kelola Segmen</span>
                         </a>
                         <a href="{{ route('users.index') }}"
                             class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('manage-users') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                             <i class="fa-solid fa-users-cog text-lg"></i>
-                            <span class="font-medium">Kelola Pengguna</span>
+                            <span class="font-medium sidebar-text">Kelola Pengguna</span>
                         </a>
                     @endif
 
                     <a href="/history"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('history') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-file text-lg"></i>
-                        <span class="font-medium">Riwayat</span>
+                        <span class="font-medium sidebar-text">Riwayat</span>
                     </a>
 
                     <a href="/profile"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('profile') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-user text-lg"></i>
-                        <span class="font-medium">Profil</span>
+                        <span class="font-medium sidebar-text">Profil</span>
                     </a>
 
                     <div class="pt-4 mt-4 border-t border-gray-200">
@@ -221,7 +284,7 @@
                             <button type="submit"
                                 class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all w-full">
                                 <i class="fa-solid fa-right-from-bracket text-lg"></i>
-                                <span class="font-medium">Keluar</span>
+                                <span class="font-medium sidebar-text">Keluar</span>
                             </button>
                         </form>
                     </div>
@@ -250,7 +313,7 @@
     <div id="mobile-overlay" class="lg:hidden fixed inset-0 bg-black/50 z-30 hidden"></div>
 
     <script>
-        // Mobile Menu Toggle
+        // Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
@@ -258,11 +321,15 @@
                     .catch(err => console.log('❌ SW failed:', err));
             });
         }
+
+        // Sidebar Elements
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const desktopMenuToggle = document.getElementById('desktop-menu-toggle');
         const sidebar = document.getElementById('sidebar');
         const sidebarClose = document.getElementById('sidebar-close');
         const mobileOverlay = document.getElementById('mobile-overlay');
 
+        // Mobile Sidebar Functions
         function openSidebar() {
             sidebar.classList.remove('-translate-x-full');
             mobileOverlay.classList.remove('hidden');
@@ -275,8 +342,30 @@
             document.body.style.overflow = 'auto';
         }
 
+        // Desktop Sidebar Toggle
+        function toggleDesktopSidebar() {
+            sidebar.classList.toggle('collapsed');
+            // Save state to localStorage
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        }
+
+        // Load saved sidebar state on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedState = localStorage.getItem('sidebarCollapsed');
+            if (savedState === 'true' && window.innerWidth >= 1024) {
+                sidebar.classList.add('collapsed');
+            }
+        });
+
+        // Mobile Menu Event Listeners
         if (mobileMenuToggle) {
             mobileMenuToggle.addEventListener('click', openSidebar);
+        }
+
+        // Desktop Menu Event Listener
+        if (desktopMenuToggle) {
+            desktopMenuToggle.addEventListener('click', toggleDesktopSidebar);
         }
 
         if (sidebarClose) {

@@ -8,274 +8,112 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
-        @keyframes gradient {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        .animate-gradient {
-            background-size: 200% 200%;
-            animation: gradient 6s ease infinite;
+        /* Smooth transitions */
+        * {
+            transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
         }
     </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center p-4 relative overflow-auto">
+<body class="h-screen bg-white overflow-hidden">
 
-    <style>
-        /* Live purple-themed background using SVG animated shapes */
-        .bg-anim {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            overflow: hidden;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.04) 0%, rgba(167, 139, 250, 0.02) 50%, rgba(236, 72, 153, 0.01) 100%);
-        }
-
-        .bg-svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        .shape {
-            mix-blend-mode: screen;
-            filter: url(#blur);
-            opacity: 0.9;
-            transform-origin: center;
-            transform-box: fill-box;
-        }
-
-        .s1 {
-            animation: float1 12s ease-in-out infinite;
-        }
-
-        .s2 {
-            animation: float2 14s ease-in-out infinite;
-        }
-
-        .s3 {
-            animation: float3 10s ease-in-out infinite;
-        }
-
-        .s4 {
-            animation: float4 16s ease-in-out infinite;
-        }
-
-        @keyframes float1 {
-            0% {
-                transform: translate(0, 0) scale(1);
-            }
-
-            50% {
-                transform: translate(40px, -20px) scale(1.04);
-            }
-
-            100% {
-                transform: translate(0, 0) scale(1);
-            }
-        }
-
-        @keyframes float2 {
-            0% {
-                transform: translate(0, 0) scale(1);
-            }
-
-            50% {
-                transform: translate(-30px, 18px) scale(1.03);
-            }
-
-            100% {
-                transform: translate(0, 0) scale(1);
-            }
-        }
-
-        @keyframes float3 {
-            0% {
-                transform: translate(0, 0) scale(1);
-            }
-
-            50% {
-                transform: translate(20px, -12px) scale(1.02);
-            }
-
-            100% {
-                transform: translate(0, 0) scale(1);
-            }
-        }
-
-        @keyframes float4 {
-            0% {
-                transform: translate(0, 0) scale(1);
-            }
-
-            50% {
-                transform: translate(-18px, 24px) scale(1.05);
-            }
-
-            100% {
-                transform: translate(0, 0) scale(1);
-            }
-        }
-
-        /* subtle overlay to increase contrast */
-        .bg-anim::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.36));
-            pointer-events: none;
-        }
-    </style>
-
-    <!-- tsParticles background container (replaces SVG shapes) -->
-    <style>
-        /* tsParticles background container */
-        .bg-anim {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            background: linear-gradient(135deg, rgba(0, 120, 254, 0.03) 0%, rgba(0, 86, 179, 0.02) 50%);
-        }
-
-        #tsparticles {
-            width: 100%;
-            height: 100%;
-        }
-
-        .bg-anim::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.36));
-            pointer-events: none;
-        }
-    </style>
-
-    <div class="bg-anim" aria-hidden="true">
-        <div id="tsparticles"></div>
-    </div>
-
-    <div class="w-full max-w-md relative z-10">
-        <div class="bg-white/40 backdrop-blur-md rounded-3xl p-8 border border-white/20"
-            style="box-shadow: 0 12px 30px rgba(124,58,237,0.12);">
-            {{-- Logo & Branding --}}
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center overflow-hidden p-1"
-                    style="background: linear-gradient(135deg, #0078fe 0%, #0056b3 100%);">
-                    <div class="w-full h-full rounded-xl bg-white/10 flex items-center justify-center">
-                        <img src="{{ asset('logo.png') }}" alt="Logo" class="w-4/5 h-4/5 object-contain">
+    <div class="h-screen flex">
+        <!-- Left Side - Form -->
+        <div class="flex-1 flex items-center justify-center p-6 lg:p-8">
+            <div class="w-full max-w-md">
+                <!-- Logo -->
+                <div class="mb-6">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden mb-4">
+                        <img src="{{ asset('logo.png') }}" alt="Logo" class="w-12 h-12 object-contain">
                     </div>
+
+                    <h1 class="text-2xl font-bold text-gray-900 mb-1">Selamat Datang !</h1>
+                    <p class="text-sm text-gray-600">Masuk untuk mulai meminjam barang.</p>
                 </div>
-                <h1 class="text-3xl font-bold mb-2"
-                    style="background: linear-gradient(to right, #0078fe, #0056b3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                    Enuma Vault
-                </h1>
-                <h2 class="text-xl font-semibold text-purple-900/90">Selamat Datang Kembali</h2>
-                <p class="text-purple-800/70 mt-1">Silakan masuk ke akun Anda</p>
-            </div>
 
-            <form action="/login" method="POST" class="space-y-5">
-                @csrf
+                <form action="/login" method="POST" class="space-y-4">
+                    @csrf
 
-                {{-- Email Input --}}
-                <div>
-                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-envelope text-purple-700/70"></i>
-                        </div>
+                    <!-- Email Input -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-900 mb-1.5">
+                            Email <span class="text-red-500">*</span>
+                        </label>
                         <input type="email" name="email" id="email" required
-                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                            placeholder="you@example.com">
+                            class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+                            placeholder="Enter your mail address">
                     </div>
-                </div>
 
-                {{-- Password Input --}}
-                <div>
-                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-lock text-purple-700/70"></i>
+                    <!-- Password Input -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-900 mb-1.5">
+                            Password <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="password" id="password" required
+                                class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 pr-12"
+                                placeholder="Enter password">
+                            <button type="button" onclick="togglePassword()"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <i id="password-icon" class="fa-regular fa-eye"></i>
+                            </button>
                         </div>
-                        <input type="password" name="password" id="password" required
-                            class="block w-full pl-12 pr-4 py-3 border border-transparent bg-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all text-purple-900 placeholder-purple-700/60"
-                            placeholder="••••••••">
-                    </div>
-                </div>
-
-                {{-- Remember & Forgot --}}
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <input id="remember-me" name="remember-me" type="checkbox"
-                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                        <label for="remember-me" class="ml-2 block text-sm text-gray-700">Ingat saya</label>
                     </div>
 
-                    {{-- <div class="text-sm">
-                        <a href="#" class="font-medium text-purple-700 hover:text-purple-600">Lupa password?</a>
-                    </div> --}}
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input id="remember-me" name="remember-me" type="checkbox"
+                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer">
+                            <label for="remember-me" class="ml-2 block text-sm text-gray-700 cursor-pointer">Remember
+                                me</label>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <button type="submit"
+                            class="w-full flex justify-center items-center py-2.5 px-4 rounded-lg shadow-md text-base font-semibold text-white hover:shadow-lg transform hover:-translate-y-0.5 transition-all"
+                            style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);">
+                            Log In
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Register Link -->
+                <div class="mt-4 text-center">
+                    <p class="text-gray-600">
+                        Don't have an account ?
+                        <a href="/register" class="font-semibold text-indigo-600 hover:text-indigo-500">Register
+                            here</a>
+                    </p>
                 </div>
-
-                {{-- Submit Button --}}
-                <div>
-                    <button type="submit"
-                        class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-base font-semibold text-white hover:shadow-lg transform hover:-translate-y-0.5 transition-all"
-                        style="background: linear-gradient(to right, #0078fe, #0056b3);">
-                        <i class="fa-solid fa-right-to-bracket mr-2"></i>
-                        Masuk
-                    </button>
-                </div>
-
-            </form>
-
-            {{-- Restore single register CTA --}}
-            <div class="mt-5">
-                <a href="/register"
-                    class="w-full inline-flex justify-center items-center py-3 px-4 rounded-xl border-2 border-white/20 text-purple-900 font-semibold bg-white/10 hover:bg-white/20 transition-all">
-                    <i class="fa-solid fa-user-plus mr-2"></i>
-                    Daftar Sekarang
-                </a>
             </div>
-
         </div>
 
+        <!-- Right Side - Illustration -->
+        <div class="hidden lg:flex flex-1 relative overflow-hidden">
+            <img src="{{ asset('auth.png') }}" alt="Illustration" class="w-full h-full object-cover">
+        </div>
     </div>
 
-    <!-- tsParticles scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            tsParticles.load('tsparticles', {
-                fullScreen: { enable: false },
-                detectRetina: true,
-                fpsLimit: 60,
-                background: { color: { value: 'transparent' } },
-                particles: {
-                    number: { value: 30, density: { enable: true, area: 800 } },
-                    color: { value: ['#0078fe', '#0056b3', '#1e90ff', '#00bfff'] },
-                    shape: { type: 'circle' },
-                    opacity: { value: 0.7, random: { enable: true, minimumValue: 0.3 } },
-                    size: { value: { min: 20, max: 60 }, animation: { enable: true, speed: 6, minimumValue: 20, sync: false } },
-                    move: { enable: true, speed: 1.5, direction: 'none', outMode: 'out' },
-                    links: { enable: false }
-                },
-                interactivity: {
-                    detectsOn: 'canvas',
-                    events: { onHover: { enable: true, mode: 'repulse' }, onClick: { enable: false } },
-                    modes: { repulse: { distance: 120, duration: 0.4 } }
-                }
-            });
-        });
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const passwordIcon = document.getElementById('password-icon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+            }
+        }
     </script>
 
 </body>
