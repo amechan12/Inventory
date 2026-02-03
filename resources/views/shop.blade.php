@@ -107,12 +107,7 @@
                         data-stock="{{ $product->stock }}">
                         <div
                             class="w-full aspect-square bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
-                            @if ($product->image_path)
-                                <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}"
-                                    class="w-full h-full object-cover">
-                            @else
-                                <i class="fa-solid fa-image text-6xl text-gray-300"></i>
-                            @endif
+                                <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
 
                             <div
                                 class="absolute inset-0 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity">

@@ -20,6 +20,8 @@ class Product extends Model
         'segment_id',
     ];
 
+    protected $appends = ['image_url'];
+
     // Relasi: Satu Product bisa ada di banyak Transaction (Many-to-Many)
     public function transactions()
     {
@@ -31,5 +33,14 @@ class Product extends Model
     public function segment()
     {
         return $this->belongsTo(Segment::class);
+    }
+
+    public function getImageUrlAttribute()
+    {
+        if ($this->image_path) {
+            return asset('storage/' . $this->image_path);
+        }
+
+        return asset('assets/img/defaultgambar.jpg');
     }
 }
