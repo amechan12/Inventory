@@ -34,7 +34,8 @@
 
     <div class="max-w-6xl mx-auto">
 
-        <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
+        <h1
+            class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
             <i class="fa-solid fa-shopping-cart mr-3"></i>Pinjam Barang
         </h1>
 
@@ -44,11 +45,13 @@
 
             {{-- QR Scanner Button --}}
             <div class="mb-6">
-                <button id="qr-scanner-btn" class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-4 px-6 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-3">
+                <button id="qr-scanner-btn"
+                    class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-4 px-6 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-3">
                     <i class="fa-solid fa-qrcode text-2xl"></i>
                     <span class="text-lg">Scan QR Code Barang</span>
                 </button>
-                <p class="mt-3 text-sm text-gray-500">Tip: <strong>Scan QR barang</strong> untuk mengajukan peminjaman barang.</p>
+                <p class="mt-3 text-sm text-gray-500">Tip: <strong>Scan QR barang</strong> untuk mengajukan peminjaman
+                    barang.</p>
             </div>
 
             <form id="checkout-form">
@@ -57,7 +60,9 @@
 
                 <div id="cart-items" class="space-y-3 mb-6"></div>
 
-                <button type="submit" id="checkout-btn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                <button type="submit" id="checkout-btn"
+                    class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
                     <i class="fa-solid fa-check mr-2"></i>Ajukan Pinjam (Semua Item)
                 </button>
             </form>
@@ -69,7 +74,8 @@
                 <h2 class="text-xl font-bold text-gray-800 mb-4">Peminjaman Menunggu Persetujuan</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @foreach ($pendingLoans as $loan)
-                        <div class="border border-yellow-200 rounded-xl p-4 hover:shadow-md transition-all bg-gradient-to-br from-yellow-50 to-white">
+                        <div
+                            class="border border-yellow-200 rounded-xl p-4 hover:shadow-md transition-all bg-gradient-to-br from-yellow-50 to-white">
                             <div class="flex justify-between items-start mb-3">
                                 <div class="flex-1">
                                     <h3 class="font-bold text-gray-800 mb-1">
@@ -82,10 +88,16 @@
                                         <span class="font-semibold">No. Pengajuan:</span> {{ $loan->invoice_number }}
                                     </p>
                                     <p class="text-sm text-gray-600">
-                                        <span class="font-semibold">Tanggal Ajuan:</span> {{ $loan->created_at->format('d/m/Y H:i') }}
+                                        <span class="font-semibold">Tanggal Ajuan:</span>
+                                        {{ $loan->created_at->format('d/m/Y H:i') }}
                                     </p>
                                     <p class="text-sm text-gray-600">
-                                        <span class="font-semibold">Durasi:</span> {{ $loan->duration }} hari
+                                        <span class="font-semibold">Durasi:</span>
+                                        @if($loan->duration == 0)
+                                            <span class="text-purple-600 font-semibold">Permanen</span>
+                                        @else
+                                            {{ $loan->duration }} hari
+                                        @endif
                                     </p>
                                     <p class="text-sm text-gray-600">
                                         <span class="font-semibold">Alasan:</span> {{ $loan->borrow_reason }}
@@ -103,13 +115,16 @@
                                     </div>
 
                                     <div class="mt-4">
-                                        <button type="button" class="w-full cancel-pending-loan-btn px-4 py-2 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition-all font-semibold text-sm" data-loan-id="{{ $loan->id }}" data-invoice="{{ $loan->invoice_number }}">
+                                        <button type="button"
+                                            class="w-full cancel-pending-loan-btn px-4 py-2 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition-all font-semibold text-sm"
+                                            data-loan-id="{{ $loan->id }}" data-invoice="{{ $loan->invoice_number }}">
                                             <i class="fa-solid fa-times mr-1"></i>Batalkan Pengajuan
                                         </button>
                                     </div>
                                 </div>
                                 <div class="ml-2">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
                                         <i class="fa-solid fa-clock mr-1"></i>Menunggu
                                     </span>
                                 </div>
@@ -125,7 +140,8 @@
 
     {{-- QR Scanner Modal --}}
     <div id="qr-scanner-modal" class="fixed inset-0 bg-black/70 z-50 hidden">
-        <div class="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl p-6 max-w-lg w-full">
+        <div
+            class="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl p-6 max-w-lg w-full">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-bold text-gray-800">Scan QR Code Barang</h2>
                 <button id="close-qr-scanner" class="text-gray-500 hover:text-gray-700">
@@ -143,29 +159,59 @@
 
     {{-- Borrow Checkout Modal --}}
     <div id="borrow-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
-        <div class="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 transform md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl p-6 w-full max-w-lg">
+        <div
+            class="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 transform md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl p-6 w-full max-w-lg">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-bold text-gray-800">Ajukan Pinjam (Keranjang)</h2>
-                <button id="borrow-cancel-btn" class="text-gray-500 hover:text-gray-700"><i class="fa-solid fa-times text-2xl"></i></button>
+                <button id="borrow-cancel-btn" class="text-gray-500 hover:text-gray-700"><i
+                        class="fa-solid fa-times text-2xl"></i></button>
             </div>
 
             <form id="borrow-modal-form" class="space-y-4" onsubmit="return false;">
                 <div>
-                    <label for="borrow-duration" class="block text-sm font-medium text-gray-700 mb-2">Durasi Peminjaman (hari)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Tipe Peminjaman</label>
+                    <div class="space-y-3">
+                        <label
+                            class="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
+                            <input type="radio" name="borrow-type" value="temporary" checked
+                                class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                            <div class="ml-3 flex-1">
+                                <span class="font-semibold text-gray-800">Pinjaman Sementara</span>
+                                <p class="text-xs text-gray-500">Barang akan dikembalikan sesuai durasi</p>
+                            </div>
+                        </label>
+                        <label
+                            class="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
+                            <input type="radio" name="borrow-type" value="permanent"
+                                class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                            <div class="ml-3 flex-1">
+                                <span class="font-semibold text-gray-800">Pinjaman Permanen</span>
+                                <p class="text-xs text-gray-500">Barang tidak perlu dikembalikan</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="duration-field">
+                    <label for="borrow-duration" class="block text-sm font-medium text-gray-700 mb-2">Durasi Peminjaman
+                        (hari)</label>
                     <input id="borrow-duration" type="number" min="1" value="3" required
                         class="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <div>
-                    <label for="borrow-reason" class="block text-sm font-medium text-gray-700 mb-2">Alasan Peminjaman</label>
+                    <label for="borrow-reason" class="block text-sm font-medium text-gray-700 mb-2">Alasan
+                        Peminjaman</label>
                     <textarea id="borrow-reason" rows="4" required
                         class="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         placeholder="Contoh: Kebutuhan tugas kuliah..."></textarea>
                 </div>
 
                 <div class="flex justify-end gap-3">
-                    <button type="button" id="borrow-cancel-btn-2" class="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200">Batal</button>
-                    <button type="button" id="borrow-confirm-btn" class="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white">Ajukan</button>
+                    <button type="button" id="borrow-cancel-btn-2"
+                        class="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200">Batal</button>
+                    <button type="button" id="borrow-confirm-btn"
+                        class="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white">Ajukan</button>
                 </div>
             </form>
         </div>
@@ -173,10 +219,12 @@
 
     {{-- Cancel Borrow Modal --}}
     <div id="cancel-borrow-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
-        <div class="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 transform md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl p-6 w-full max-w-md">
+        <div
+            class="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 transform md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl p-6 w-full max-w-md">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-bold text-gray-800">Konfirmasi Pembatalan</h2>
-                <button id="cancel-modal-close-btn" class="text-gray-500 hover:text-gray-700"><i class="fa-solid fa-times text-2xl"></i></button>
+                <button id="cancel-modal-close-btn" class="text-gray-500 hover:text-gray-700"><i
+                        class="fa-solid fa-times text-2xl"></i></button>
             </div>
 
             <div class="mb-6">
@@ -195,8 +243,11 @@
             </div>
 
             <div class="flex justify-end gap-3">
-                <button type="button" id="cancel-modal-cancel-btn" class="px-6 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold">Batal</button>
-                <button type="button" id="cancel-modal-confirm-btn" class="px-6 py-2 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white hover:shadow-lg font-semibold">Batalkan Pinjaman</button>
+                <button type="button" id="cancel-modal-cancel-btn"
+                    class="px-6 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold">Batal</button>
+                <button type="button" id="cancel-modal-confirm-btn"
+                    class="px-6 py-2 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white hover:shadow-lg font-semibold">Batalkan
+                    Pinjaman</button>
             </div>
         </div>
     </div>
@@ -205,7 +256,7 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const qrScannerBtn = document.getElementById('qr-scanner-btn');
             const qrScannerModal = document.getElementById('qr-scanner-modal');
             const closeQrScanner = document.getElementById('close-qr-scanner');
@@ -265,7 +316,7 @@
                         });
 
                         const data = await res.json();
-                        
+
                         if (res.ok && data.success) {
                             showNotification('Peminjaman berhasil dibatalkan');
                             closeCancelBorrowModal();
@@ -289,7 +340,7 @@
 
             // QR Scanner Functions
             if (qrScannerBtn && qrScannerModal) {
-                qrScannerBtn.addEventListener('click', function() {
+                qrScannerBtn.addEventListener('click', function () {
                     qrScannerModal.classList.remove('hidden');
                     document.body.style.overflow = 'hidden';
                     startQrScanner();
@@ -297,7 +348,7 @@
             }
 
             if (closeQrScanner && qrScannerModal) {
-                closeQrScanner.addEventListener('click', function() {
+                closeQrScanner.addEventListener('click', function () {
                     stopQrScanner();
                     qrScannerModal.classList.add('hidden');
                     document.body.style.overflow = 'auto';
@@ -305,7 +356,7 @@
             }
 
             if (qrScannerModal) {
-                qrScannerModal.addEventListener('click', function(e) {
+                qrScannerModal.addEventListener('click', function (e) {
                     if (e.target === qrScannerModal) {
                         stopQrScanner();
                         qrScannerModal.classList.add('hidden');
@@ -318,14 +369,14 @@
                 html5QrCode = new Html5Qrcode("qr-reader");
 
                 html5QrCode.start({
-                        facingMode: "environment"
-                    }, {
-                        fps: 10,
-                        qrbox: {
-                            width: 250,
-                            height: 250
-                        }
-                    },
+                    facingMode: "environment"
+                }, {
+                    fps: 10,
+                    qrbox: {
+                        width: 250,
+                        height: 250
+                    }
+                },
                     (decodedText, decodedResult) => {
                         try {
                             console.debug('QR decoded:', decodedText);
@@ -461,11 +512,11 @@
                 notification.className =
                     `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg ${type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-red-500 to-rose-500'} text-white transform translate-x-full transition-transform duration-300`;
                 notification.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} text-xl"></i>
-                        <span class="font-medium">${message}</span>
-                    </div>
-                `;
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} text-xl"></i>
+                                        <span class="font-medium">${message}</span>
+                                    </div>
+                                `;
 
                 document.body.appendChild(notification);
 
@@ -511,23 +562,23 @@
                             const node = document.createElement('div');
                             node.className = 'cart-item flex justify-between items-center bg-gradient-to-r from-gray-50 to-indigo-50 p-3 rounded-xl border border-gray-100';
                             node.innerHTML = `
-                                <div class="flex-1 min-w-0">
-                                    <p class="font-semibold text-gray-800 text-sm truncate">${item.name}</p>
-                                    <p class="text-xs text-gray-500">Qty: ${item.quantity || 1}</p>
-                                </div>
-                                <div class="flex items-center space-x-2 ml-2">
-                                    <button type="button" class="cart-quantity-btn w-8 h-8 flex items-center justify-center text-indigo-600 bg-white rounded-lg border hover:border-indigo-400 transition-all" data-id="${item.id}" data-action="decrease">
-                                        <i class="fa-solid fa-minus text-xs"></i>
-                                    </button>
-                                    <span class="font-bold text-sm min-w-[2rem] text-center text-indigo-600">${item.quantity || 1}</span>
-                                    <button type="button" class="cart-quantity-btn w-8 h-8 flex items-center justify-center text-indigo-600 bg-white rounded-lg border hover:border-indigo-400 transition-all" data-id="${item.id}" data-action="increase">
-                                        <i class="fa-solid fa-plus text-xs"></i>
-                                    </button>
-                                    <button type="button" class="cart-remove-btn text-red-500 hover:text-red-700 ml-1 w-8 h-8 flex items-center justify-center bg-red-50 rounded-lg hover:bg-red-100 transition-all" data-id="${item.id}">
-                                        <i class="fa-solid fa-trash text-xs"></i>
-                                    </button>
-                                </div>
-                            `;
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="font-semibold text-gray-800 text-sm truncate">${item.name}</p>
+                                                    <p class="text-xs text-gray-500">Qty: ${item.quantity || 1}</p>
+                                                </div>
+                                                <div class="flex items-center space-x-2 ml-2">
+                                                    <button type="button" class="cart-quantity-btn w-8 h-8 flex items-center justify-center text-indigo-600 bg-white rounded-lg border hover:border-indigo-400 transition-all" data-id="${item.id}" data-action="decrease">
+                                                        <i class="fa-solid fa-minus text-xs"></i>
+                                                    </button>
+                                                    <span class="font-bold text-sm min-w-[2rem] text-center text-indigo-600">${item.quantity || 1}</span>
+                                                    <button type="button" class="cart-quantity-btn w-8 h-8 flex items-center justify-center text-indigo-600 bg-white rounded-lg border hover:border-indigo-400 transition-all" data-id="${item.id}" data-action="increase">
+                                                        <i class="fa-solid fa-plus text-xs"></i>
+                                                    </button>
+                                                    <button type="button" class="cart-remove-btn text-red-500 hover:text-red-700 ml-1 w-8 h-8 flex items-center justify-center bg-red-50 rounded-lg hover:bg-red-100 transition-all" data-id="${item.id}">
+                                                        <i class="fa-solid fa-trash text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            `;
                             cartItemsContainer.appendChild(node);
                         });
 
@@ -620,7 +671,7 @@
             }
 
             // cart action handlers
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 const target = e.target.closest('.cart-quantity-btn, .cart-remove-btn');
                 if (!target) return;
                 // handled inside renderCart via delegation already for newly created nodes
@@ -647,6 +698,8 @@
             async function handleBulkCheckout(duration, borrowReason) {
                 const token = '{{ csrf_token() }}';
                 let successUnits = 0; // count units (sum of quantities) successfully submitted
+                let errorMessages = []; // collect error messages
+
                 for (const item of cart) {
                     try {
                         const res = await fetch('{{ route('loan.submit') }}', {
@@ -663,9 +716,12 @@
                             successUnits += (item.quantity || 1);
                         } else {
                             console.error('Failed to submit borrow for', item, j);
+                            const errorMsg = j && j.message ? j.message : `Gagal meminjam ${item.name}`;
+                            errorMessages.push(errorMsg);
                         }
                     } catch (e) {
                         console.error(e);
+                        errorMessages.push(`Error untuk ${item.name}: ${e.message}`);
                     }
                 }
 
@@ -676,7 +732,11 @@
                     renderCart();
                     setTimeout(() => window.location.reload(), 1000);
                 } else {
-                    showNotification('Gagal mengajukan peminjaman. Coba lagi.', 'error');
+                    // Show specific error if available, otherwise generic message
+                    const errorMsg = errorMessages.length > 0
+                        ? errorMessages[0]
+                        : 'Gagal mengajukan peminjaman. Coba lagi.';
+                    showNotification(errorMsg, 'error');
                 }
             }
 
@@ -695,6 +755,13 @@
             function openBorrowModal() {
                 borrowDuration.value = '7';
                 borrowReasonInput.value = '';
+                // Reset to temporary borrow type
+                const tempRadio = document.querySelector('input[name="borrow-type"][value="temporary"]');
+                if (tempRadio) tempRadio.checked = true;
+                // Show duration field
+                const durationField = document.getElementById('duration-field');
+                if (durationField) durationField.style.display = 'block';
+                borrowDuration.required = true;
                 borrowModal.classList.remove('hidden');
                 setTimeout(() => borrowDuration.focus(), 50);
             }
@@ -702,6 +769,24 @@
             function closeBorrowModal() {
                 borrowModal.classList.add('hidden');
             }
+
+            // Handle borrow type change
+            const borrowTypeRadios = document.querySelectorAll('input[name="borrow-type"]');
+            const durationField = document.getElementById('duration-field');
+
+            borrowTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function () {
+                    if (this.value === 'permanent') {
+                        // Hide duration field for permanent borrow
+                        durationField.style.display = 'none';
+                        borrowDuration.required = false;
+                    } else {
+                        // Show duration field for temporary borrow
+                        durationField.style.display = 'block';
+                        borrowDuration.required = true;
+                    }
+                });
+            });
 
             if (checkoutForm) {
                 checkoutForm.addEventListener('submit', (e) => {
@@ -717,13 +802,30 @@
             // Modal confirm/cancel handlers
             if (borrowConfirmBtn) {
                 borrowConfirmBtn.addEventListener('click', () => {
-                    const duration = borrowDuration.value ? borrowDuration.value.trim() : '';
-                    if (!duration || isNaN(duration) || parseInt(duration) < 1) {
-                        showNotification('Durasi harus berupa angka minimal 1 hari.', 'error');
-                        borrowDuration.focus();
+                    const borrowType = document.querySelector('input[name="borrow-type"]:checked');
+                    const isPermanent = borrowType && borrowType.value === 'permanent';
+
+                    let duration;
+                    if (isPermanent) {
+                        // Set duration to 0 for permanent borrow
+                        duration = '0';
+                    } else {
+                        // Validate duration for temporary borrow
+                        duration = borrowDuration.value ? borrowDuration.value.trim() : '';
+                        if (!duration || isNaN(duration) || parseInt(duration) < 1) {
+                            showNotification('Durasi harus berupa angka minimal 1 hari.', 'error');
+                            borrowDuration.focus();
+                            return;
+                        }
+                    }
+
+                    const borrowReason = borrowReasonInput.value ? borrowReasonInput.value.trim() : '';
+                    if (!borrowReason) {
+                        showNotification('Alasan peminjaman harus diisi!', 'error');
+                        borrowReasonInput.focus();
                         return;
                     }
-                    const borrowReason = borrowReasonInput.value ? borrowReasonInput.value.trim() : '';
+
                     closeBorrowModal();
                     handleBulkCheckout(duration, borrowReason);
                 });
@@ -745,7 +847,7 @@
             renderCart();
 
             // Auto-hide alerts
-            setTimeout(function() {
+            setTimeout(function () {
                 const alerts = document.querySelectorAll('.bg-gradient-to-r');
                 alerts.forEach(alert => {
                     if (alert.classList.contains('from-green-50') || alert.classList.contains('from-red-50')) {

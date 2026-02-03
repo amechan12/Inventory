@@ -33,7 +33,8 @@
     @endif
 
     <div class="mb-6">
-        <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+        <h1
+            class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             <i class="fa-solid fa-clipboard-list mr-3"></i>Kelola Pinjaman
         </h1>
     </div>
@@ -68,7 +69,8 @@
                     <p class="text-sm text-gray-600">Sedang Dipinjam</p>
                     <p class="text-2xl font-bold" style="color: #0078fe;">{{ $stats['active_loans'] }}</p>
                 </div>
-                <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: rgba(0,120,254,0.1);">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center"
+                    style="background-color: rgba(0,120,254,0.1);">
                     <i class="fa-solid fa-box text-xl" style="color: #0078fe;"></i>
                 </div>
             </div>
@@ -95,12 +97,14 @@
             </h2>
 
             @if($pendingLoans->count() > 0)
-            <form id="approveAllForm" action="{{ route('admin.loans.approveAll') }}" method="POST" onsubmit="return confirm('Yakin setujui semua pengajuan peminjaman? Pastikan stok cukup.');">
-                @csrf
-                <button type="submit" id="approveAllBtn" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm hover:shadow-lg">
-                    <i class="fa-solid fa-check mr-1"></i> Setujui Semua
-                </button>
-            </form>
+                <form id="approveAllForm" action="{{ route('admin.loans.approveAll') }}" method="POST"
+                    onsubmit="return confirm('Yakin setujui semua pengajuan peminjaman? Pastikan stok cukup.');">
+                    @csrf
+                    <button type="submit" id="approveAllBtn"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm hover:shadow-lg">
+                        <i class="fa-solid fa-check mr-1"></i> Setujui Semua
+                    </button>
+                </form>
             @endif
         </div>
 
@@ -127,13 +131,20 @@
                                             </div>
                                             <div>
                                                 <span class="font-semibold">Jumlah Item:</span>
-                                                {{ $loan->products->sum(function($p){ return $p->pivot->quantity; }) }}
+                                                {{ $loan->products->sum(function ($p) {
+                        return $p->pivot->quantity; }) }}
                                             </div>
                                             <div>
-                                                <span class="font-semibold">Durasi:</span> {{ $loan->duration }} hari
+                                                <span class="font-semibold">Durasi:</span>
+                                                @if($loan->duration == 0)
+                                                    <span class="text-purple-600 font-semibold">Permanen</span>
+                                                @else
+                                                    {{ $loan->duration }} hari
+                                                @endif
                                             </div>
                                             <div>
-                                                <span class="font-semibold">Tanggal Pengajuan:</span> {{ $loan->created_at->format('d/m/Y H:i') }}
+                                                <span class="font-semibold">Tanggal Pengajuan:</span>
+                                                {{ $loan->created_at->format('d/m/Y H:i') }}
                                             </div>
                                         </div>
                                         <div class="mt-2">
@@ -147,14 +158,17 @@
                                 <form action="{{ route('admin.loans.approve', $loan->id) }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $loan->products->first()->id }}">
-                                    <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                                    <button type="submit"
+                                        class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-check"></i>
                                         <span>Approve</span>
                                     </button>
                                 </form>
                                 <form action="{{ route('admin.loans.reject', $loan->id) }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2" onclick="return confirm('Yakin ingin menolak peminjaman ini?')">
+                                    <button type="submit"
+                                        class="w-full bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                        onclick="return confirm('Yakin ingin menolak peminjaman ini?')">
                                         <i class="fa-solid fa-xmark"></i>
                                         <span>Tolak</span>
                                     </button>
@@ -199,7 +213,9 @@
                                         <span class="font-semibold">Peminjam:</span> {{ $loan->user->name }}
                                     </div>
                                     <div>
-                                        <span class="font-semibold">Jumlah Item:</span> {{ $loan->products->sum(function($p){ return $p->pivot->quantity; }) }}
+                                        <span class="font-semibold">Jumlah Item:</span>
+                                        {{ $loan->products->sum(function ($p) {
+                        return $p->pivot->quantity; }) }}
                                     </div>
                                     <div>
                                         <span class="font-semibold">Tanggal Pinjam:</span> {{ $loan->borrow_date->format('d/m/Y') }}
@@ -214,7 +230,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            
+
                             {{-- Confirm Return Form --}}
                             <form action="{{ route('admin.loans.confirm-return', $loan->id) }}" method="POST" class="border-t pt-4">
                                 @csrf
@@ -238,7 +254,8 @@
                                             class="block w-full border border-gray-200 rounded-xl shadow-sm py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                             placeholder="Catatan tentang kondisi barang..."></textarea>
                                     </div>
-                                    <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                                    <button type="submit"
+                                        class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-check-circle"></i>
                                         <span>Konfirmasi Pengembalian</span>
                                     </button>
@@ -258,7 +275,7 @@
 
     <script>
         // Auto-hide alerts
-        setTimeout(function() {
+        setTimeout(function () {
             const alerts = document.querySelectorAll('.bg-gradient-to-r');
             alerts.forEach(alert => {
                 if (alert.classList.contains('from-green-50') || alert.classList.contains('from-red-50')) {

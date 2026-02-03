@@ -83,7 +83,7 @@
                                 @else
                                     <a href="{{ route('segments.qr.show', $segment->id) }}" title="Lihat QR Segmen">
                                         <img src="https://chart.googleapis.com/chart?chs=120x120&cht=qr&chl={{ urlencode(url('/return/segment/' . $segment->id)) }}"
-                                            alt="QR" class="w-20 h-20 border rounded-lg inline-block" />
+                                            alt="Segmen {{ $segment->name }}" class="w-20 h-20 border rounded-lg inline-block" />
                                     </a>
                                 @endif
                             </div>

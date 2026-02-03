@@ -34,7 +34,7 @@ class AdminLoanController extends Controller
             'total_items_borrowed' => Transaction::where('status', 'borrowed')
                 ->with('products')
                 ->get()
-                ->sum(function($transaction) {
+                ->sum(function ($transaction) {
                     return $transaction->products->sum('pivot.quantity');
                 }),
         ];
@@ -76,17 +76,24 @@ class AdminLoanController extends Controller
                 $productModel->decrement('stock', $qty);
             }
 
+            // Check if this is a permanent borrow (duration = 0)
+            $isPermanent = $transaction->duration == 0;
+
             $transaction->update([
-                'status' => 'borrowed',
+                'status' => $isPermanent ? 'completed' : 'borrowed',
                 'approved_by' => Auth::id(),
                 'approved_at' => Carbon::now(),
                 'borrow_date' => Carbon::now(),
             ]);
 
             DB::commit();
-            
+
+            $message = $isPermanent
+                ? 'Pinjaman permanen berhasil disetujui. Stok barang telah dipotong permanen.'
+                : 'Peminjaman berhasil disetujui. Stok barang dikurangi.';
+
             return redirect()->route('admin.loans')
-                ->with('success', 'Peminjaman berhasil disetujui. Stok barang dikurangi.');
+                ->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menyetujui peminjaman: ' . $e->getMessage());
@@ -121,10 +128,10 @@ class AdminLoanController extends Controller
             ]);
 
             DB::commit();
-            
+
             return redirect()->route('admin.loans')
                 ->with('success', 'Peminjaman berhasil ditolak.');
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menolak peminjaman: ' . $e->getMessage());
@@ -166,8 +173,11 @@ class AdminLoanController extends Controller
                     $productModel->decrement('stock', $qty);
                 }
 
+                // Check if this is a permanent borrow (duration = 0)
+                $isPermanent = $transaction->duration == 0;
+
                 $transaction->update([
-                    'status' => 'borrowed',
+                    'status' => $isPermanent ? 'completed' : 'borrowed',
                     'approved_by' => Auth::id(),
                     'approved_at' => Carbon::now(),
                     'borrow_date' => Carbon::now(),
@@ -184,7 +194,8 @@ class AdminLoanController extends Controller
         $message = "{$approvedCount} peminjaman berhasil disetujui.";
         if (count($failed) > 0) {
             $message .= ' Beberapa peminjaman gagal disetujui: ' . implode('; ', array_slice($failed, 0, 5));
-            if (count($failed) > 5) $message .= '...';
+            if (count($failed) > 5)
+                $message .= '...';
             return redirect()->route('admin.loans')->with('error', $message);
         }
 
@@ -226,14 +237,14 @@ class AdminLoanController extends Controller
             }
 
             DB::commit();
-            
-            $message = $request->condition_on_return === 'lost' 
+
+            $message = $request->condition_on_return === 'lost'
                 ? 'Pengembalian dikonfirmasi. Barang hilang, stok tidak dikembalikan.'
                 : 'Pengembalian dikonfirmasi. Stok barang dikembalikan.';
-            
+
             return redirect()->route('admin.loans')
                 ->with('success', $message);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal mengonfirmasi pengembalian: ' . $e->getMessage());
@@ -245,7 +256,7 @@ class AdminLoanController extends Controller
     {
         $transaction = Transaction::where('id', $transactionId)
             ->where('status', 'returning')
-            ->whereHas('products', function($query) use ($productId) {
+            ->whereHas('products', function ($query) use ($productId) {
                 $query->where('products.id', $productId);
             })
             ->with(['user', 'products'])

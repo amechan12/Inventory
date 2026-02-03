@@ -142,7 +142,7 @@ class LoanController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'duration' => 'required|integer|min:1|max:365',
+            'duration' => 'required|integer|min:0|max:365', // Allow 0 for permanent borrow
             'borrow_reason' => 'required|string|max:500',
             'quantity' => 'nullable|integer|min:1'
         ]);
@@ -154,6 +154,8 @@ class LoanController extends Controller
 
             // Determine requested quantity
             $quantity = (int) ($request->input('quantity', 1));
+            $duration = (int) $request->duration;
+            $isPermanent = $duration === 0;
 
             // Cek stok tersedia (stock - reserved_stock)
             $availableStock = $product->stock - $product->reserved_stock;
@@ -165,13 +167,14 @@ class LoanController extends Controller
             // Generate invoice number
             $invoiceNumber = $this->generateLoanNumber();
 
-            // Buat transaction dengan status pending
+            // Buat transaction dengan status pending (baik temporary maupun permanent)
+            // Semua peminjaman memerlukan persetujuan admin
             $transaction = Transaction::create([
                 'invoice_number' => $invoiceNumber,
                 'user_id' => Auth::id(),
                 'status' => 'pending',
                 'borrow_reason' => $request->borrow_reason,
-                'duration' => $request->duration,
+                'duration' => $duration, // 0 untuk permanent, >0 untuk temporary
                 'borrow_date' => Carbon::now(),
                 'total_amount' => null,
                 'payment_method' => null,
@@ -183,19 +186,22 @@ class LoanController extends Controller
                 'price_per_item' => 0, // Tidak ada harga untuk pinjaman
             ]);
 
-            // Tambahkan reserved_stock (barang ditandai sebagai "Dipesan")
-            if ($quantity > 0) {
-                $product->increment('reserved_stock', $quantity);
-            }
+            // Reserve stock untuk semua jenis peminjaman (temporary dan permanent)
+            // Stock akan dipotong permanen saat admin approve permanent borrow
+            $product->increment('reserved_stock', $quantity);
 
             DB::commit();
 
+            $successMessage = $isPermanent
+                ? 'Pengajuan pinjaman permanen berhasil dikirim. Menunggu persetujuan admin.'
+                : 'Pengajuan peminjaman berhasil dikirim. Menunggu persetujuan admin.';
+
             if ($request->wantsJson()) {
-                return response()->json(['success' => true]);
+                return response()->json(['success' => true, 'message' => $successMessage]);
             }
 
             return redirect()->route('loan.borrow')
-                ->with('success', 'Pengajuan peminjaman berhasil dikirim. Menunggu persetujuan admin.');
+                ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();

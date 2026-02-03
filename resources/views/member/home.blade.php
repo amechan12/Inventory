@@ -93,7 +93,15 @@
                             <div>
                                 <div class="text-sm text-gray-500">#{{ $trx->invoice_number }} &middot; {{ $trx->created_at->format('d M Y') }}</div>
                                 <div class="mt-2 font-medium text-gray-800">{{ $trx->products->pluck('name')->join(', ') }}</div>
-                                <div class="text-xs text-gray-500 mt-1">Durasi: {{ $trx->duration ?? '-' }} hari &middot; Kembali: {{ $trx->return_date ? $trx->return_date->format('d M Y') : '-' }}</div>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    Durasi: 
+                                    @if($trx->duration == 0)
+                                        <span class="text-purple-600 font-semibold">Permanen</span>
+                                    @else
+                                        {{ $trx->duration ?? '-' }} hari
+                                    @endif
+                                    &middot; Kembali: {{ $trx->return_date ? $trx->return_date->format('d M Y') : '-' }}
+                                </div>
                             </div>
                             <div class="text-right">
                                 @if($trx->status == 'pending')

@@ -147,7 +147,11 @@
                                     {{ $trx->borrow_date ? $trx->borrow_date->format('d/m/Y') : $trx->created_at->format('d/m/Y') }}
                                 </td>
                                 <td class="px-3 sm:px-6 py-4 text-gray-600 whitespace-nowrap">
-                                    {{ $trx->duration ?? '-' }} hari
+                                    @if($trx->duration == 0)
+                                        <span class="text-purple-600 font-semibold">Permanen</span>
+                                    @else
+                                        {{ $trx->duration ?? '-' }} hari
+                                    @endif
                                 </td>
                                 <td class="px-3 sm:px-6 py-4">
                                     <div class="flex flex-col sm:flex-row gap-2">
