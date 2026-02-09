@@ -35,6 +35,14 @@ class Product extends Model
         return $this->belongsTo(Segment::class);
     }
 
+    // Relasi: Product dapat berada di beberapa Box
+    public function boxes()
+    {
+        return $this->belongsToMany(\App\Models\Box::class, 'box_product')
+                    ->withPivot('quantity')
+                    ->withTimestamps();
+    }
+
     public function getImageUrlAttribute()
     {
         if ($this->image_path) {

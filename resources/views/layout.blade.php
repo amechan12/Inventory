@@ -259,6 +259,13 @@
                             <i class="fa-solid fa-map-location-dot text-lg"></i>
                             <span class="font-medium sidebar-text">Kelola Segmen</span>
                         </a>
+                        @if(in_array(Auth::user()->role, ['pengelola','kasir']))
+                            <a href="{{ route('boxes.index') }}"
+                                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('boxes*') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
+                                <i class="fa-solid fa-boxes text-lg"></i>
+                                <span class="font-medium sidebar-text">Kelola Kotak</span>
+                            </a>
+                        @endif
                         <a href="{{ route('users.index') }}"
                             class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('manage-users') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                             <i class="fa-solid fa-users-cog text-lg"></i>

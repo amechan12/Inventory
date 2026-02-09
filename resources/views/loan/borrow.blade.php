@@ -157,7 +157,26 @@
         </div>
     </div>
 
+
     {{-- Borrow Checkout Modal --}}
+    {{-- Box Contents Modal (populated when scanning a box) --}}
+    <div id="box-products-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
+        <div class="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 transform md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl p-6 w-full max-w-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h2 id="box-products-title" class="text-xl font-bold text-gray-800">Isi Kotak</h2>
+                <button id="close-box-products" class="text-gray-500 hover:text-gray-700"><i class="fa-solid fa-times text-2xl"></i></button>
+            </div>
+
+            <div id="box-products-list" class="space-y-3 max-h-64 overflow-y-auto mb-4">
+                <!-- items inserted here -->
+            </div>
+
+            <div class="flex items-center gap-3 mb-3">
+                <button id="add-box-items-to-cart" class="ml-auto px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white">Tambah ke Keranjang</button>
+            </div>
+            <p class="text-sm text-gray-500">Pilih produk dan jumlahnya, lalu tekan "Tambah ke Keranjang". Setelah itu lengkapi durasi dan alasan peminjaman di formulir.</p>
+        </div>
+    </div>
     <div id="borrow-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
         <div
             class="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 transform md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl p-6 w-full max-w-lg">
@@ -253,6 +272,19 @@
     </div>
 
     {{-- QR Code Scanner Library --}}
+    <script>
+        // Development helper: unregister any existing service workers and clear caches
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(regs => {
+                regs.forEach(reg => {
+                    try { reg.unregister(); } catch(e){}
+                });
+            }).catch(()=>{});
+        }
+        if (window.caches) {
+            caches.keys().then(keys => keys.forEach(k => caches.delete(k))).catch(()=>{});
+        }
+    </script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <script>
@@ -391,11 +423,62 @@
 
                                 // If URL is a segment return path, navigate there
                                 if ((url.origin === window.location.origin && url.pathname.includes('/return/segment')) || url.pathname.includes('/return/segment')) {
-                                    stopQrScanner();
-                                    qrScannerModal.classList.add('hidden');
-                                    document.body.style.overflow = 'auto';
-                                    window.location.href = url.href;
+                                    console.debug('Detected segment return URL, redirecting to', url.href);
+                                    // Ensure scanner is stopped before navigating to avoid race/stuck camera
+                                    stopQrScanner().then(() => {
+                                        qrScannerModal.classList.add('hidden');
+                                        document.body.style.overflow = 'auto';
+                                        window.location.href = url.href;
+                                    }).catch(err => {
+                                        console.error('Error stopping scanner before redirect to segment return:', err);
+                                        qrScannerModal.classList.add('hidden');
+                                        document.body.style.overflow = 'auto';
+                                        window.location.href = url.href;
+                                    });
                                     return;
+                                }
+
+                                // If URL points to a box page, open the box modal instead of redirecting
+                                if (url.pathname.includes('/boxes/')) {
+                                    // Try to extract numeric id from path (/boxes/{id})
+                                    const parts = url.pathname.split('/').filter(Boolean);
+                                    const idx = parts.indexOf('boxes');
+                                    const maybeId = parts[idx + 1];
+                                    if (maybeId) {
+                                        const boxId = maybeId;
+                                        console.debug('Detected box URL, id=', boxId, 'decodedText=', decodedText);
+                                        // Immediately stop scanner and hide scanner modal, then fetch box data and show modal
+                                        stopQrScanner().then(() => {
+                                            console.debug('Scanner stopped, proceeding to fetch box by id', boxId);
+                                            qrScannerModal.classList.add('hidden');
+                                            document.body.style.overflow = 'auto';
+                                            fetch(`/api/box/${encodeURIComponent(boxId)}`)
+                                                .then(r => r.json())
+                                                .then(j => {
+                                                    console.debug('Box API response for id', boxId, j);
+                                                    if (j && j.success && j.box) {
+                                                        showBoxModal(j.box);
+                                                    } else {
+                                                        // fallback to navigate
+                                                        window.location.href = url.href;
+                                                    }
+                                                }).catch((err) => {
+                                                    console.error('Fetch box by id error', err);
+                                                    window.location.href = url.href;
+                                                });
+                                        }).catch(err => {
+                                            console.error('Error stopping scanner before fetch by id', err);
+                                            // attempt to proceed anyway
+                                            qrScannerModal.classList.add('hidden');
+                                            document.body.style.overflow = 'auto';
+                                            fetch(`/api/box/${encodeURIComponent(boxId)}`).then(r => r.json()).then(j => { if (j && j.success && j.box) showBoxModal(j.box); else window.location.href = url.href; }).catch(() => window.location.href = url.href);
+                                        });
+                                        return;
+                                    } else {
+                                        // no id found — fallback to navigate
+                                        window.location.href = url.href;
+                                        return;
+                                    }
                                 }
                             } catch (urlErr) {
                                 // Not a URL — maybe the QR encodes a raw product id or JSON
@@ -403,6 +486,59 @@
                                 // If raw is numeric, treat as product ID
                                 if (/^\d+$/.test(raw)) {
                                     productId = raw;
+                                } else if (/^BOX-/.test(raw)) {
+                                    // Raw looks like a box barcode; call API to resolve and open box modal so user can choose items
+                                    try {
+                                        console.debug('Detected BOX- barcode:', raw);
+                                        // Immediately stop scanner and hide modal, then fetch box data and show modal
+                                        stopQrScanner().then(() => {
+                                            console.debug('Scanner stopped, proceeding to fetch box by barcode', raw);
+                                            qrScannerModal.classList.add('hidden');
+                                            document.body.style.overflow = 'auto';
+                                            fetch(`/api/box-barcode/${encodeURIComponent(raw)}`)
+                                                .then(r => r.json())
+                                                .then(j => {
+                                                    console.debug('Box API response for barcode', raw, j);
+                                                    if (j && j.success && j.box) {
+                                                        showBoxModal(j.box);
+                                                    } else {
+                                                        showNotification('Kotak tidak ditemukan!', 'error');
+                                                    }
+                                                }).catch((err) => {
+                                                    console.error('Fetch box by barcode error', err);
+                                                    showNotification('Gagal memuat kotak dari barcode', 'error');
+                                                });
+                                        }).catch(err => {
+                                            console.error('Error stopping scanner before fetch by barcode', err);
+                                            qrScannerModal.classList.add('hidden');
+                                            document.body.style.overflow = 'auto';
+                                            fetch(`/api/box-barcode/${encodeURIComponent(raw)}`).then(r => r.json()).then(j => { if (j && j.success && j.box) showBoxModal(j.box); else showNotification('Kotak tidak ditemukan!', 'error'); }).catch(() => showNotification('Gagal memuat kotak dari barcode', 'error'));
+                                        });
+                                    } catch (e) {
+                                        console.error(e);
+                                        showNotification('Gagal memproses barcode kotak', 'error');
+                                    }
+                                    return;
+                                } else if (raw.includes('/return/segment') || raw.includes('return/segment')) {
+                                    // Raw scanned text contains segment return path — navigate to it
+                                    try {
+                                        const href = raw.startsWith('/') ? (window.location.origin + raw) : raw;
+                                        console.debug('Detected raw segment return path, redirecting to', href);
+                                        stopQrScanner().then(() => {
+                                            qrScannerModal.classList.add('hidden');
+                                            document.body.style.overflow = 'auto';
+                                            window.location.href = href;
+                                        }).catch(err => {
+                                            console.error('Error stopping scanner before redirecting raw segment path', err);
+                                            qrScannerModal.classList.add('hidden');
+                                            document.body.style.overflow = 'auto';
+                                            window.location.href = href;
+                                        });
+                                    } catch (err) {
+                                        console.error('Failed to redirect to raw segment path:', err);
+                                        showNotification('QR Code segmen tidak dapat diproses', 'error');
+                                    }
+                                    return;
                                 } else {
                                     // If JSON with product_id
                                     try {
@@ -417,11 +553,20 @@
                             }
 
                             if (productId) {
-                                // Add to cart (supports multiple items)
-                                fetchAndAddProductFromQR(productId);
-                                stopQrScanner();
-                                qrScannerModal.classList.add('hidden');
-                                document.body.style.overflow = 'auto';
+                                console.debug('Detected productId from QR:', productId);
+                                // Immediately stop scanner and hide modal, then add product to cart
+                                stopQrScanner().then(() => {
+                                    console.debug('Scanner stopped, adding product from QR', productId);
+                                    qrScannerModal.classList.add('hidden');
+                                    document.body.style.overflow = 'auto';
+                                    // Add to cart (supports multiple items)
+                                    fetchAndAddProductFromQR(productId);
+                                }).catch(err => {
+                                    console.error('Error stopping scanner before adding product', err);
+                                    qrScannerModal.classList.add('hidden');
+                                    document.body.style.overflow = 'auto';
+                                    fetchAndAddProductFromQR(productId);
+                                });
                                 return;
                             }
 
@@ -442,13 +587,14 @@
 
             function stopQrScanner() {
                 if (html5QrCode) {
-                    html5QrCode.stop().then(() => {
-                        html5QrCode.clear();
+                    return html5QrCode.stop().then(() => {
+                        try { html5QrCode.clear(); } catch(e) {}
                         html5QrCode = null;
                     }).catch((err) => {
                         console.error('Error stopping scanner:', err);
                     });
                 }
+                return Promise.resolve();
             }
 
             function fetchAndLoadProduct(productId) {
@@ -564,25 +710,26 @@
                             node.innerHTML = `
                                                 <div class="flex-1 min-w-0">
                                                     <p class="font-semibold text-gray-800 text-sm truncate">${item.name}</p>
-                                                    <p class="text-xs text-gray-500">Qty: ${item.quantity || 1}</p>
                                                 </div>
                                                 <div class="flex items-center space-x-2 ml-2">
-                                                    <button type="button" class="cart-quantity-btn w-8 h-8 flex items-center justify-center text-indigo-600 bg-white rounded-lg border hover:border-indigo-400 transition-all" data-id="${item.id}" data-action="decrease">
-                                                        <i class="fa-solid fa-minus text-xs"></i>
+                                                    <button type="button" class="cart-quantity-btn cart-decrease w-10 h-10 flex items-center justify-center text-indigo-600 bg-white rounded-2xl border hover:border-indigo-400 transition-all" data-id="${item.id}" data-action="decrease">
+                                                        <i class="fa-solid fa-minus"></i>
                                                     </button>
-                                                    <span class="font-bold text-sm min-w-[2rem] text-center text-indigo-600">${item.quantity || 1}</span>
-                                                    <button type="button" class="cart-quantity-btn w-8 h-8 flex items-center justify-center text-indigo-600 bg-white rounded-lg border hover:border-indigo-400 transition-all" data-id="${item.id}" data-action="increase">
-                                                        <i class="fa-solid fa-plus text-xs"></i>
+                                                    <div class="inline-flex items-center justify-center bg-white border rounded-2xl w-10 h-10">
+                                                        <span class="cart-quantity-display font-bold text-sm text-indigo-600">${item.quantity || 1}</span>
+                                                    </div>
+                                                    <button type="button" class="cart-quantity-btn cart-increase w-10 h-10 flex items-center justify-center text-indigo-600 bg-white rounded-2xl border hover:border-indigo-400 transition-all" data-id="${item.id}" data-action="increase">
+                                                        <i class="fa-solid fa-plus"></i>
                                                     </button>
-                                                    <button type="button" class="cart-remove-btn text-red-500 hover:text-red-700 ml-1 w-8 h-8 flex items-center justify-center bg-red-50 rounded-lg hover:bg-red-100 transition-all" data-id="${item.id}">
-                                                        <i class="fa-solid fa-trash text-xs"></i>
+                                                    <button type="button" class="cart-remove-btn text-red-500 hover:text-red-700 ml-2 w-10 h-10 flex items-center justify-center bg-red-50 rounded-2xl hover:bg-red-100 transition-all" data-id="${item.id}">
+                                                        <i class="fa-solid fa-trash"></i>
                                                     </button>
                                                 </div>
                                             `;
                             cartItemsContainer.appendChild(node);
                         });
 
-                        // attach handlers
+                        // attach handlers for remove and quantity controls
                         cartItemsContainer.querySelectorAll('.cart-remove-btn').forEach(b => b.addEventListener('click', (e) => {
                             const id = b.dataset.id;
                             cart = cart.filter(i => i.id != id);
@@ -609,6 +756,16 @@
                                 }
                             }
                             saveCart();
+                        }));
+
+                        // update visible quantity displays after any change
+                        cartItemsContainer.querySelectorAll('.cart-quantity-btn').forEach(btn => btn.addEventListener('click', () => {
+                            const parent = btn.closest('.cart-item');
+                            if (!parent) return;
+                            const id = btn.dataset.id;
+                            const display = parent.querySelector('.cart-quantity-display');
+                            const item = cart.find(i => i.id == id);
+                            if (display && item) display.textContent = item.quantity || 1;
                         }));
                     }
                 }
@@ -675,6 +832,114 @@
                 const target = e.target.closest('.cart-quantity-btn, .cart-remove-btn');
                 if (!target) return;
                 // handled inside renderCart via delegation already for newly created nodes
+            });
+
+            // Box modal functions
+            const boxProductsModal = document.getElementById('box-products-modal');
+            const boxProductsList = document.getElementById('box-products-list');
+            const boxProductsTitle = document.getElementById('box-products-title');
+            const closeBoxProductsBtn = document.getElementById('close-box-products');
+            const addBoxItemsBtn = document.getElementById('add-box-items-to-cart');
+
+            function showBoxModal(box) {
+                // box: { id, name, barcode, products: [...] }
+                console.debug('Rendering box modal, box object:', box);
+                boxProductsTitle.textContent = `Isi Kotak: ${box.name}`;
+                boxProductsList.innerHTML = '';
+                if (!box.products || box.products.length === 0) {
+                    boxProductsList.innerHTML = '<p class="text-sm text-gray-500">Belum ada produk di kotak ini.</p>';
+                } else {
+                    box.products.forEach((p, idx) => {
+                        // Normalize values from API: prefer normalized pivot_quantity, then pivot.quantity, then product stock
+                        const pivotQ = (typeof p.pivot_quantity !== 'undefined') ? parseInt(p.pivot_quantity, 10) : (p.pivot && p.pivot.quantity ? parseInt(p.pivot.quantity, 10) : 0);
+                        const stockQ = (typeof p.stock !== 'undefined') ? parseInt(p.stock, 10) : (p.stock ? parseInt(p.stock, 10) : 0);
+                        const max = pivotQ || stockQ || 0;
+                        const displayCount = max || 1;
+                        console.debug('Box product:', { id: p.id, name: p.name, pivotQ, stockQ, displayCount, max });
+                        const row = document.createElement('div');
+                        row.className = 'flex items-center gap-3 p-3 rounded-lg border border-gray-100';
+                        row.innerHTML = `
+                            <div class="flex items-center">
+                                <input type="checkbox" data-id="${p.id}" data-max="${max}" id="box-prod-${p.id}" class="box-prod-checkbox w-6 h-6 accent-indigo-600 border border-gray-200 rounded-md" checked />
+                                <div class="flex-1 min-w-0 ml-3">
+                                    <label for="box-prod-${p.id}" class="font-medium text-sm text-gray-800 cursor-pointer">${p.name}</label>
+                                    <div class="text-xs text-gray-500">SKU: ${p.id} • Tersedia: ${displayCount}</div>
+                                </div>
+                            </div>
+                            <input type="hidden" data-id="${p.id}" class="box-prod-qty" value="1" data-max="${max}" />
+                        `;
+                        boxProductsList.appendChild(row);
+                    });
+                }
+
+                boxProductsModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeBoxModal() {
+                boxProductsModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+
+            if (closeBoxProductsBtn) closeBoxProductsBtn.addEventListener('click', closeBoxModal);
+            if (boxProductsModal) boxProductsModal.addEventListener('click', function(e){ if (e.target === boxProductsModal) closeBoxModal(); });
+
+            // Box modal no longer has inline +/- controls; quantities are selected in the cart.
+
+            if (addBoxItemsBtn) addBoxItemsBtn.addEventListener('click', async function(){
+                const checkboxes = Array.from(boxProductsList.querySelectorAll('.box-prod-checkbox'));
+                const selected = checkboxes.filter(cb => cb.checked);
+                if (selected.length === 0) {
+                    showNotification('Tidak ada produk terpilih', 'error');
+                    return;
+                }
+
+                // Build fetch promises to get canonical product stock for each selected item
+                const fetchPromises = selected.map(cb => {
+                    const id = cb.dataset.id || cb.getAttribute('data-id');
+                    return fetch(`/api/product/${encodeURIComponent(id)}`).then(r => r.json()).then(j => ({ cb, product: j && j.product ? j.product : null })).catch(() => ({ cb, product: null }));
+                });
+
+                const results = await Promise.all(fetchPromises);
+                let added = 0;
+
+                results.forEach(res => {
+                    const cb = res.cb;
+                    const id = cb.dataset.id || cb.getAttribute('data-id');
+                    const qtyInput = boxProductsList.querySelector(`.box-prod-qty[data-id="${id}"]`);
+                    const chosenQty = qtyInput ? Math.max(1, parseInt(qtyInput.value || qtyInput.getAttribute('value') || '1', 10)) : 1;
+
+                    // determine available stock: prefer server product.stock, fallback to box data-max
+                    const serverProduct = res.product;
+                    let serverStock = 0;
+                    if (serverProduct && typeof serverProduct.stock !== 'undefined') {
+                        serverStock = parseInt(serverProduct.stock || '0', 10) || 0;
+                    }
+
+                    let boxMax = 0;
+                    if (qtyInput) boxMax = parseInt(qtyInput.getAttribute('data-max') || '0', 10) || 0;
+                    if (!boxMax) boxMax = parseInt(cb.getAttribute('data-max') || cb.dataset.max || '0', 10) || 0;
+
+                    const finalMax = serverStock || boxMax || chosenQty;
+
+                    // label
+                    const label = cb.nextElementSibling?.querySelector('label')?.textContent || 'Produk';
+                    const existing = cart.find(i => i.id == id);
+                    if (existing) {
+                        existing.stock = finalMax;
+                        existing.quantity = Math.min(existing.quantity || 1, finalMax || existing.quantity || 1);
+                    } else {
+                        cart.push({ id: id, name: label, quantity: Math.min(chosenQty, finalMax), stock: finalMax });
+                    }
+                    added += 1;
+                });
+
+                if (added > 0) {
+                    saveCart();
+                    showNotification(`${added} produk ditambahkan ke keranjang dari kotak`);
+                }
+
+                closeBoxModal();
             });
 
             // mobile cart toggle

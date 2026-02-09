@@ -11,6 +11,7 @@ use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SegmentController;
+use App\Http\Controllers\BoxController;
 
 // ... (Route Login & Register) ...
 Route::get('/', function () {
@@ -62,6 +63,17 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/loans/approve-all', [AdminLoanController::class, 'approveAll'])->name('admin.loans.approveAll');
         Route::post('/admin/loans/{id}/reject', [AdminLoanController::class, 'rejectBorrow'])->name('admin.loans.reject');
         Route::post('/admin/loans/{id}/confirm-return', [AdminLoanController::class, 'confirmReturn'])->name('admin.loans.confirm-return');
+
+        // Box management (boxes contain small items grouped by a box barcode)
+        Route::resource('boxes', BoxController::class)->except(['destroy']);
+        Route::post('/boxes/scan', [BoxController::class, 'scan'])->name('boxes.scan');
+        Route::get('/boxes/{id}/qr', [BoxController::class, 'showQR'])->name('boxes.qr.show');
+        Route::delete('/boxes/{box}', [BoxController::class, 'destroy'])->name('boxes.destroy');
+        Route::put('/boxes/{box}/products', [BoxController::class, 'updateProducts'])->name('boxes.products.update');
+        // AJAX endpoints to manage individual products inside a box
+        Route::post('/boxes/{box}/products/add', [BoxController::class, 'addProduct'])->name('boxes.products.add');
+        Route::put('/boxes/{box}/products/{product}', [BoxController::class, 'updateProduct'])->name('boxes.products.update.single');
+        Route::delete('/boxes/{box}/products/{product}', [BoxController::class, 'removeProduct'])->name('boxes.products.remove');
     });
 
     // --- RUTE HANYA UNTUK PENGELOLA ---
@@ -82,6 +94,9 @@ Route::middleware(['auth'])->group(function () {
 
 // API Routes untuk QR Scanner (tidak perlu auth karena diakses via AJAX)
 Route::get('/api/product/{id}', [LoanController::class, 'getProductByQR']);
+// API: get box by id or by barcode for scanner
+Route::get('/api/box/{id}', [BoxController::class, 'apiGetById']);
+Route::get('/api/box-barcode/{barcode}', [BoxController::class, 'apiGetByBarcode']);
 Route::get('/api/loan/{productId}', [LoanController::class, 'getLoanByQR']);
 Route::get('/api/admin/loan/{productId}/{transactionId}', [AdminLoanController::class, 'getLoanTransactionByQR']);
 // API untuk QR segmen (mem-return URL untuk redirect ke page pengembalian segmen)

@@ -12,6 +12,7 @@ use chillerlan\QRCode\QROptions;
 use chillerlan\QRCode\Output\QROutputInterface;
 use chillerlan\QRCode\Common\EccLevel;
 use App\Models\Segment;
+use App\Models\Box;
 
 class ProductController extends Controller
 {
@@ -57,10 +58,11 @@ class ProductController extends Controller
 
         $products = $query->latest()->get();
         $segments = Segment::orderBy('name', 'asc')->get();
+        $boxes = Box::orderBy('name')->get();
         $totalProducts = Product::count();
         $categories = $allCategories;
 
-        return view('manage', compact('products', 'segments', 'categories', 'totalProducts'));
+        return view('manage', compact('products', 'segments', 'categories', 'totalProducts', 'boxes'));
     }
 
     // Menyimpan produk baru
@@ -79,13 +81,35 @@ class ProductController extends Controller
             $path = $request->file('image_path')->store('products', 'public');
         }
 
-        Product::create([
+        $product = Product::create([
             'name' => $request->name,
             'stock' => $request->stock,
             'category' => $request->category,
             'image_path' => $path,
             'segment_id' => $request->segment_id,
         ]);
+
+        // Attach to box if provided
+        $addedToBox = false;
+        $addedQty = null;
+        if ($request->filled('box_id')) {
+            $box = Box::find($request->box_id);
+            if ($box) {
+                $qty = $request->input('box_quantity', 1);
+                $box->products()->attach($product->id, ['quantity' => max(1, (int)$qty)]);
+                $addedToBox = true;
+                $addedQty = max(1, (int)$qty);
+            }
+        }
+
+        if ($request->wantsJson() || $request->ajax() || str_contains($request->header('accept', ''), 'application/json')) {
+            return response()->json([
+                'success' => true,
+                'product' => $product->fresh(),
+                'added_to_box' => $addedToBox,
+                'quantity' => $addedQty,
+            ]);
+        }
 
         return back()->with('success', 'Barang berhasil ditambahkan!');
     }
@@ -97,6 +121,8 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'category' => 'nullable|string',
             'segment_id' => 'nullable|exists:segments,id',
+            'box_id' => 'nullable|exists:boxes,id',
+            'box_quantity' => 'nullable|integer|min:1',
             'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'remove_image' => 'nullable',
         ]);
@@ -124,6 +150,19 @@ class ProductController extends Controller
             }
         }
 
+        // If box_id provided, attach or update pivot quantity without detaching other boxes
+        if ($request->filled('box_id')) {
+            $box = Box::find($request->box_id);
+            if ($box) {
+                $qty = $request->input('box_quantity', 1);
+                $box->products()->syncWithoutDetaching([$product->id => ['quantity' => max(1, (int)$qty)]]);
+            }
+        }
+
+        if ($request->wantsJson() || $request->ajax() || str_contains($request->header('accept', ''), 'application/json')) {
+            return response()->json(['success' => true, 'product' => $product->fresh()]);
+        }
+
         return back()->with('success', 'Barang berhasil diperbarui!');
     }
 
@@ -134,16 +173,25 @@ class ProductController extends Controller
 
         $product->increment('stock', $request->stock_added);
 
+        if ($request->wantsJson() || $request->ajax() || str_contains($request->header('accept', ''), 'application/json')) {
+            return response()->json(['success' => true, 'message' => 'Stok barang berhasil ditambahkan', 'product_id' => $product->id, 'new_stock' => $product->stock]);
+        }
+
         return back()->with('success', 'Stok barang berhasil ditambahkan!');
     }
 
     // Hapus produk
-    public function destroy(Product $product)
+    public function destroy(Request $request, Product $product)
     {
         if ($product->image_path) {
             Storage::disk('public')->delete($product->image_path);
         }
         $product->delete();
+
+        // If request expects JSON (AJAX/fetch), return JSON to avoid parse errors on client
+        if ($request->wantsJson() || $request->ajax() || str_contains($request->header('accept', ''), 'application/json')) {
+            return response()->json(['success' => true, 'message' => 'Barang berhasil dihapus']);
+        }
 
         return back()->with('success', 'Barang berhasil dihapus!');
     }

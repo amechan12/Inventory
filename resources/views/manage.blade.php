@@ -93,7 +93,6 @@
 
                         <div class="p-4">
                             <h3 class="text-lg font-bold text-gray-800 line-clamp-2 mb-2">{{ $product->name }}</h3>
-                            <div class="text-sm text-gray-500 mb-1">Segmen: {{ $product->segment ? $product->segment->name : '-' }}</div>
                             <div class="flex justify-end items-center mb-4">
                                 <p
                                     class="text-sm font-semibold {{ $product->stock > 5 ? 'text-gray-500' : ($product->stock > 0 ? 'text-orange-500' : 'text-red-500') }}">
@@ -109,7 +108,8 @@
                                         data-id="{{ $product->id }}" data-name="{{ $product->name }}"
                                         data-stock="{{ $product->stock }}"
                                         data-category="{{ $product->category }}"
-                                        data-segment-id="{{ $product->segment_id }}"
+                                        data-box-id="{{ optional($product->boxes->first())->id }}"
+                                        data-box-quantity="{{ optional(optional($product->boxes->first())->pivot)->quantity }}"
                                         data-image-url="{{ $product->image_url }}">
                                         <i class="fa-solid fa-edit mr-1"></i>Edit
                                     </button>
@@ -123,11 +123,12 @@
 
                                 {{-- QR Code Button --}}
                                 <div class="flex gap-2">
-                                    <a href="{{ route('products.qr.show', $product->id) }}"
-                                        class="flex-1 bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 text-sm py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium border border-purple-100 text-center inline-block"
-                                        title="Lihat QR Code">
-                                        <i class="fa-solid fa-qrcode mr-1"></i>Lihat QR
-                                    </a>
+                                    @php $box = $product->boxes->first(); @endphp
+                                    <a href="{{ $box ? route('boxes.qr.show', $box->id) : route('products.qr.show', $product->id) }}"
+                                            class="flex-1 bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 text-sm py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium border border-purple-100 text-center inline-block"
+                                            title="Lihat QR Code">
+                                            <i class="fa-solid fa-qrcode mr-1"></i>Lihat QR
+                                        </a>
                                 </div>
                             </div>
                         </div>
@@ -180,12 +181,7 @@
                                 <input type="text" id="name_tambah" name="name" required class="input-field"
                                     placeholder="Masukkan nama barang">
                             </div>
-                            <div>
-                                <label for="stock_tambah" class="block text-sm font-medium text-gray-700 mb-2">Stok
-                                    Awal</label>
-                                <input type="number" id="stock_tambah" name="stock" required class="input-field"
-                                    placeholder="10" min="0">
-                            </div>
+                            <input type="hidden" name="stock" value="0">
                             <div>
                                 <label for="category_tambah"
                                     class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
@@ -193,14 +189,21 @@
                                     placeholder="Elektronik, Peralatan, dll">
                             </div>
 
+                            {{-- Segmen Lokasi removed per request --}}
+
                             <div>
-                                <label for="segment_tambah" class="block text-sm font-medium text-gray-700 mb-2">Segmen Lokasi</label>
-                                <select id="segment_tambah" name="segment_id" class="input-field">
-                                    <option value="">-- Pilih Segmen --</option>
-                                    @foreach($segments as $segment)
-                                        <option value="{{ $segment->id }}">{{ $segment->name }}</option>
+                                <label for="box_tambah" class="block text-sm font-medium text-gray-700 mb-2">Kotak (opsional)</label>
+                                <select id="box_tambah" name="box_id" class="input-field">
+                                    <option value="">-- Pilih Kotak --</option>
+                                    @foreach($boxes as $box)
+                                        <option value="{{ $box->id }}">{{ $box->name }} ({{ $box->barcode }})</option>
                                     @endforeach
                                 </select>
+                            </div>
+
+                            <div>
+                                <label for="box_quantity_tambah" class="block text-sm font-medium text-gray-700 mb-2">Jumlah di Kotak</label>
+                                <input type="number" id="box_quantity_tambah" name="box_quantity" class="input-field" min="1" value="1">
                             </div>
 
                             <div>
@@ -236,12 +239,14 @@
                                 <input type="text" id="category_edit" name="category" class="input-field">
                             </div>
 
+                            {{-- Segmen Lokasi removed per request --}}
+
                             <div>
-                                <label for="segment_edit" class="block text-sm font-medium text-gray-700 mb-2">Segmen Lokasi</label>
-                                <select id="segment_edit" name="segment_id" class="input-field">
-                                    <option value="">-- Pilih Segmen --</option>
-                                    @foreach($segments as $segment)
-                                        <option value="{{ $segment->id }}">{{ $segment->name }}</option>
+                                <label for="box_edit" class="block text-sm font-medium text-gray-700 mb-2">Kotak (opsional)</label>
+                                <select id="box_edit" name="box_id" class="input-field">
+                                    <option value="">-- Pilih Kotak --</option>
+                                    @foreach($boxes as $box)
+                                        <option value="{{ $box->id }}">{{ $box->name }} ({{ $box->barcode }})</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -334,24 +339,27 @@
                                 <input type="text" name="name" required class="input-field"
                                     placeholder="Masukkan nama barang">
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Stok Awal</label>
-                                <input type="number" name="stock" required class="input-field" placeholder="10"
-                                    min="0">
-                            </div>
+                            <input type="hidden" name="stock" value="0">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
                                 <input type="text" name="category" class="input-field" placeholder="Makanan, dll">
                             </div>
 
+                            {{-- Segmen Lokasi removed per request --}}
+
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Segmen Lokasi</label>
-                                <select name="segment_id" class="input-field">
-                                    <option value="">-- Pilih Segmen --</option>
-                                    @foreach($segments as $segment)
-                                        <option value="{{ $segment->id }}">{{ $segment->name }}</option>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Kotak (opsional)</label>
+                                <select name="box_id" class="input-field">
+                                    <option value="">-- Pilih Kotak --</option>
+                                    @foreach($boxes as $box)
+                                        <option value="{{ $box->id }}">{{ $box->name }} ({{ $box->barcode }})</option>
                                     @endforeach
                                 </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah di Kotak</label>
+                                <input type="number" name="box_quantity" class="input-field" min="1" value="1">
                             </div>
 
                             <div>
@@ -381,12 +389,14 @@
                                 <input type="text" id="mobile_category_edit" name="category" class="input-field">
                             </div>
 
+                            {{-- Segmen Lokasi removed per request --}}
+
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Segmen Lokasi</label>
-                                <select id="mobile_segment_edit" name="segment_id" class="input-field">
-                                    <option value="">-- Pilih Segmen --</option>
-                                    @foreach($segments as $segment)
-                                        <option value="{{ $segment->id }}">{{ $segment->name }}</option>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Kotak (opsional)</label>
+                                <select id="mobile_box_edit" name="box_id" class="input-field">
+                                    <option value="">-- Pilih Kotak --</option>
+                                    @foreach($boxes as $box)
+                                        <option value="{{ $box->id }}">{{ $box->name }} ({{ $box->barcode }})</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -541,11 +551,11 @@
                 });
             });
 
-            function populateEditForm(id, name, price, category, segmentId, imageUrl) {
+            function populateEditForm(id, name, price, category, boxId, boxQuantity, imageUrl) {
                 editForm.action = `/products/${id}`;
                 editForm.querySelector('#name_edit').value = name;
                 editForm.querySelector('#category_edit').value = category || '';
-                document.getElementById('segment_edit').value = segmentId || '';
+                document.getElementById('box_edit').value = boxId || '';
                 document.getElementById('edit-instruction').classList.add('hidden');
 
                 // Handle image preview for desktop
@@ -583,7 +593,7 @@
                 mobileEditForm.action = `/products/${id}`;
                 document.getElementById('mobile_name_edit').value = name;
                 document.getElementById('mobile_category_edit').value = category || '';
-                document.getElementById('mobile_segment_edit').value = segmentId || '';
+                document.getElementById('mobile_box_edit').value = boxId || '';
                 document.getElementById('mobile-edit-instruction').classList.add('hidden');
             }
 
@@ -608,7 +618,8 @@
                         button.dataset.name,
                         0,
                         button.dataset.category,
-                        button.dataset.segmentId,
+                        button.dataset.boxId,
+                        button.dataset.boxQuantity,
                         button.dataset.imageUrl
                     );
 

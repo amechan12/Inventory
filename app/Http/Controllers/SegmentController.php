@@ -110,9 +110,15 @@ class SegmentController extends Controller
         $segment = Segment::findOrFail($segmentId);
         
         // Cari transaksi dengan status returning (menunggu konfirmasi) yang punya produk di segmen ini
+        // Produk bisa secara langsung punya segment_id OR berada di dalam kotak yang terhubung ke segmen
         $transactions = Transaction::where('status', 'returning')
             ->whereHas('products', function ($q) use ($segment) {
-                $q->where('segment_id', $segment->id);
+                $q->where(function($q2) use ($segment) {
+                    $q2->where('segment_id', $segment->id)
+                       ->orWhereHas('boxes', function($qb) use ($segment) {
+                           $qb->where('segment_id', $segment->id);
+                       });
+                });
             })
             ->with(['user', 'products'])
             ->latest()
@@ -121,7 +127,12 @@ class SegmentController extends Controller
         // Transaksi yang sedang dipinjam (borrowed) untuk produk di segmen ini
         $activeLoans = Transaction::where('status', 'borrowed')
             ->whereHas('products', function ($q) use ($segment) {
-                $q->where('segment_id', $segment->id);
+                $q->where(function($q2) use ($segment) {
+                    $q2->where('segment_id', $segment->id)
+                       ->orWhereHas('boxes', function($qb) use ($segment) {
+                           $qb->where('segment_id', $segment->id);
+                       });
+                });
             })
             ->with('products')
             ->latest()
@@ -184,7 +195,12 @@ class SegmentController extends Controller
         $transaction = Transaction::where('status', 'returning')
             ->whereHas('products', function ($q) use ($productId, $segmentId) {
                 $q->where('products.id', $productId)
-                  ->where('products.segment_id', $segmentId);
+                  ->where(function($q2) use ($segmentId) {
+                      $q2->where('products.segment_id', $segmentId)
+                         ->orWhereHas('boxes', function($qb) use ($segmentId) {
+                             $qb->where('segment_id', $segmentId);
+                         });
+                  });
             })
             ->with(['user', 'products'])
             ->first();

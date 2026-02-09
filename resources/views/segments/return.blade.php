@@ -65,6 +65,8 @@
             </div>
         @endif
 
+        
+
     </div>
 
     {{-- Modal / Scanner --}}
