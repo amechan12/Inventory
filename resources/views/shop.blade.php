@@ -106,7 +106,11 @@
                         data-stock="{{ $product->stock }}">
                         <div
                             class="w-full aspect-square bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
+<<<<<<< HEAD
                             <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+=======
+                                <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+>>>>>>> 89b334a1ef9ed6929090303b9cfce18a67fd9ad2
 
                             <div
                                 class="absolute inset-0 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity">

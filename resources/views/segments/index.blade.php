@@ -78,10 +78,15 @@
                                 </p>
                             </div>
                             <div class="ml-4 flex-shrink-0 text-right">
-                                <img src="{{ $segment->image_url }}" alt="{{ $segment->name }}" class="w-20 h-20 object-cover border rounded-lg inline-block segment-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-                                <div class="w-20 h-20 bg-gray-100 border rounded-lg flex items-center justify-center hidden segment-placeholder">
-                                    <i class="fa-solid fa-image text-gray-400 text-2xl"></i>
-                                </div>
+                                @if ($segment->image_path)
+                                    <img src="{{ Storage::url($segment->image_path) }}" alt="{{ $segment->name }}"
+                                        class="w-20 h-20 object-cover border rounded-lg inline-block" />
+                                @else
+                                    <a href="{{ route('segments.qr.show', $segment->id) }}" title="Lihat QR Segmen">
+                                        <img src="https://chart.googleapis.com/chart?chs=120x120&cht=qr&chl={{ urlencode(url('/return/segment/' . $segment->id)) }}"
+                                            alt="Segmen {{ $segment->name }}" class="w-20 h-20 border rounded-lg inline-block" />
+                                    </a>
+                                @endif
                             </div>
                         </div>
 

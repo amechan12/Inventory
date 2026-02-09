@@ -29,6 +29,6 @@ class Segment extends Model
             return asset('storage/' . $this->image_path);
         }
 
-        return asset('assets/default.png');
+        return asset('assets/img/defaultsegmen.png');
     }
 }
