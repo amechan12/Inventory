@@ -156,8 +156,8 @@
                                 </td>
                                 <td class="px-4 py-3 text-center text-gray-700 font-mono text-xs">{{ $p->id }}</td>
                                 <td class="px-4 py-3 text-center text-gray-600 text-xs">{{ $p->category ?? '-' }}</td>
-                                <td class="px-4 py-3 text-center prod-qty font-semibold {{ $p->stock > 5 ? 'text-gray-700' : ($p->stock > 0 ? 'text-orange-500' : 'text-red-500') }}" data-id="{{ $p->id }}">
-                                    {{ $p->stock }}
+                                <td class="px-4 py-3 text-center prod-qty font-semibold {{ ($p->pivot->quantity ?? 0) > 5 ? 'text-gray-700' : (($p->pivot->quantity ?? 0) > 0 ? 'text-orange-500' : 'text-red-500') }}" data-id="{{ $p->id }}">
+                                    {{ $p->pivot->quantity ?? 0 }}
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     <div class="inline-flex items-center space-x-2 justify-center">
@@ -212,7 +212,8 @@
                     fetch(addUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf }, body: JSON.stringify({ product_id: pid, quantity: qty }) })
                         .then(r => r.json()).then(j => {
                             if (j && j.success) {
-                                upsertProductRow(j.product.id, j.product.name, j.quantity);
+                                const category = (j.product && j.product.category) ? j.product.category : null;
+                                upsertProductRow(j.product.id, j.product.name, j.quantity, category);
                                 showTmpNotification('Produk disimpan ke kotak');
                             } else {
                                 alert(j.message || 'Gagal menambahkan produk');
@@ -228,7 +229,16 @@
                         fetch(`${updateBase}/${pid}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf }, body: JSON.stringify({ quantity: qty }) })
                             .then(r => r.json()).then(j => {
                                 if (j && j.success) {
-                                    upsertProductRow(pid, productsList.querySelector(`.product-row[data-id="${pid}"] .font-semibold`).textContent, qty);
+                                    // Ambil kategori dari baris yang sudah ada di tabel atau dari response
+                                    const existingRow = document.querySelector(`tr td.prod-qty[data-id="${pid}"]`);
+                                    let category = null;
+                                    if (existingRow) {
+                                        const row = existingRow.closest('tr');
+                                        const categoryCell = row ? row.querySelector('td:nth-child(3)') : null;
+                                        category = categoryCell ? categoryCell.textContent.trim() : null;
+                                        if (category === '-') category = null;
+                                    }
+                                    upsertProductRow(pid, productsList.querySelector(`.product-row[data-id="${pid}"] .font-semibold`).textContent, qty, category);
                                     showTmpNotification('Jumlah produk diperbarui');
                                 } else {
                                     alert(j.message || 'Gagal menyimpan');
@@ -264,18 +274,75 @@
                 fetch(`${updateBase}/${pid}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf }, body: JSON.stringify({ quantity: cur }) }).then(r => r.json()).then(j => { if (j && j.success) { cell.textContent = cur; showTmpNotification('Jumlah diperbarui'); } else alert(j.message || 'Gagal mengubah jumlah'); }).catch(e => { console.error(e); alert('Gagal mengubah jumlah'); });
             }
 
-            function upsertProductRow(id, name, qty) {
+            function upsertProductRow(id, name, qty, category = null) {
                 const tbody = document.querySelector('table tbody');
-                let row = tbody ? tbody.querySelector(`tr td.prod-qty[data-id="${id}"]`) : null;
-                if (row) {
-                    row.textContent = qty;
-                } else if (tbody) {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${name}</td><td>${id}</td><td class="prod-qty" data-id="${id}">${qty}</td><td><div class="inline-flex items-center space-x-2"><button data-id="${id}" class="decrease-qty px-2 py-1 border rounded">-</button><button data-id="${id}" class="increase-qty px-2 py-1 border rounded">+</button><button data-id="${id}" class="remove-from-box px-2 py-1 bg-red-50 text-red-600 border rounded">Hapus</button><a href="{{ route('loan.borrow') }}?product_id=${id}" class="btn btn-sm btn-primary">Pinjam</a></div></td>`;
-                    tbody.appendChild(tr);
-                    tr.querySelector('.increase-qty').addEventListener('click', () => changeQty(id, 1));
-                    tr.querySelector('.decrease-qty').addEventListener('click', () => changeQty(id, -1));
-                    tr.querySelector('.remove-from-box').addEventListener('click', () => { if (!confirm('Hapus produk dari kotak?')) return; fetch(`${removeBase}/${id}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } }).then(r => r.json()).then(j => { if (j && j.success) { removeProductRow(id); showTmpNotification('Produk dihapus dari kotak'); } else alert(j.message || 'Gagal menghapus'); }); });
+                let cell = tbody ? tbody.querySelector(`td.prod-qty[data-id="${id}"]`) : null;
+                if (cell) {
+                    // Jika produk sudah ada di daftar isi kotak, cukup update jumlahnya
+                    cell.textContent = qty;
+                    // Update kategori jika ada
+                    if (category !== null) {
+                        const row = cell.closest('tr');
+                        if (row) {
+                            const categoryCell = row.querySelector('td:nth-child(3)');
+                            if (categoryCell) categoryCell.textContent = category || '-';
+                            const categoryTag = row.querySelector('.text-xs.text-gray-500');
+                            if (categoryTag) {
+                                if (category) {
+                                    categoryTag.innerHTML = `<i class="fa-solid fa-tag text-gray-400"></i>${category}`;
+                                    categoryTag.style.display = '';
+                                } else {
+                                    categoryTag.style.display = 'none';
+                                }
+                            }
+                        }
+                    }
+                    return;
+                }
+                if (!tbody) return;
+
+                // Tambah baris baru dengan struktur kolom yang sama seperti di Blade:
+                // Nama | ID | Kategori | Jumlah | Aksi
+                const categoryDisplay = category || '-';
+                const categoryTagHtml = category ? `<span class="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                                <i class="fa-solid fa-tag text-gray-400"></i>${category}
+                            </span>` : '';
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50/80';
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-gray-800">
+                        <div class="flex flex-col">
+                            <span class="font-medium">${name}</span>
+                            ${categoryTagHtml}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-center text-gray-700 font-mono text-xs">${id}</td>
+                    <td class="px-4 py-3 text-center text-gray-600 text-xs">${categoryDisplay}</td>
+                    <td class="px-4 py-3 text-center prod-qty font-semibold ${qty > 5 ? 'text-gray-700' : (qty > 0 ? 'text-orange-500' : 'text-red-500')}" data-id="${id}">
+                        ${qty}
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <div class="inline-flex items-center space-x-2 justify-center">
+                            <button data-id="${id}" class="action-add hidden inline-flex items-center justify-center h-8 px-3 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 text-xs font-medium gap-1">
+                                <i class="fa-solid fa-plus"></i><span>Tambah</span>
+                            </button>
+                            <button data-id="${id}" class="action-edit hidden inline-flex items-center justify-center h-8 px-3 rounded-xl bg-green-50 text-green-700 border border-green-100 text-xs font-medium gap-1">
+                                <i class="fa-solid fa-pen-to-square"></i><span>Edit</span>
+                            </button>
+                            <button data-id="${id}" class="action-restock hidden inline-flex items-center justify-center h-8 px-3 rounded-xl bg-yellow-50 text-yellow-700 border border-yellow-100 text-xs font-medium gap-1">
+                                <i class="fa-solid fa-plus"></i><span>Restock</span>
+                            </button>
+                            <button data-id="${id}" class="action-remove hidden inline-flex items-center justify-center h-8 px-3 rounded-xl bg-red-50 text-red-600 border border-red-100 text-xs font-medium gap-1">
+                                <i class="fa-solid fa-trash-can"></i><span>Hapus</span>
+                            </button>
+                        </div>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+                // Pastikan tombol aksi di baris baru mengikuti mode yang sedang aktif
+                if (typeof setMode === 'function') {
+                    setMode(currentMode);
                 }
             }
 
@@ -298,11 +365,10 @@
                 quickForm.addEventListener('submit', function(e){
                     e.preventDefault();
                     const fd = new FormData(quickForm);
-                    const addToBox = document.getElementById('quick_add_to_box').checked;
-                    if (addToBox) {
-                        fd.append('box_id', '{{ $box->id }}');
-                        fd.append('box_quantity', document.getElementById('quick_box_qty').value || '1');
-                    }
+                    // box_id and box_quantity are already in the form, so always add to box
+                    const boxQty = document.getElementById('quick_box_qty').value || '1';
+                    // Set stock produk sama dengan jumlah di kotak
+                    fd.set('stock', boxQty);
 
                     fetch(storeUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
                         .then(res => {
@@ -318,16 +384,26 @@
                                 // insert into productsList
                                 createProductRow(prod.id, prod.name);
                                 showTmpNotification('Produk dibuat');
-                                // if server didn't add to box, try client-side add
-                                if (addToBox) {
-                                    const qty = fd.get('box_quantity') || '1';
-                                    if (j.added_to_box && j.quantity) {
-                                        upsertProductRow(prod.id, prod.name, j.quantity);
-                                    } else {
-                                        fetch(addUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf }, body: JSON.stringify({ product_id: prod.id, quantity: parseInt(qty,10) || 1 }) })
-                                            .then(r => r.json()).then(bj => { if (bj && bj.success) upsertProductRow(prod.id, prod.name, bj.quantity || qty); });
-                                    }
+                                // Always add to box since box_id is in the form
+                                const qty = boxQty;
+                                const category = prod.category || null;
+                                if (j.added_to_box && j.quantity) {
+                                    upsertProductRow(prod.id, prod.name, j.quantity, category);
+                                    showTmpNotification('Produk ditambahkan ke kotak');
+                                } else {
+                                    // If server didn't add to box, try client-side add
+                                    fetch(addUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf }, body: JSON.stringify({ product_id: prod.id, quantity: parseInt(qty,10) || 1 }) })
+                                        .then(r => r.json()).then(bj => { 
+                                            if (bj && bj.success) {
+                                                upsertProductRow(prod.id, prod.name, bj.quantity || qty, category);
+                                                showTmpNotification('Produk ditambahkan ke kotak');
+                                            }
+                                        });
                                 }
+                                // Reset form
+                                quickForm.reset();
+                                document.getElementById('quick_box_qty').value = '1';
+                                document.querySelector('input[name="box_id"]').value = '{{ $box->id }}';
                             } else if (j && j.errors) {
                                 alert(Object.values(j.errors).flat().join('\n'));
                             } else {
@@ -466,16 +542,21 @@
             if (btn.classList.contains('action-restock')) {
                 const id = btn.dataset.id;
                 try {
-                    // Ambil stok saat ini agar sesuai dengan halaman Kelola Barang
+                    // Ambil jumlah saat ini di kotak (pivot quantity), bukan stock global
+                    const cell = document.querySelector(`td.prod-qty[data-id="${id}"]`);
+                    const currentQty = cell ? parseInt(cell.textContent || '0', 10) : 0;
+                    
+                    // Ambil juga stock global untuk referensi
                     const infoRes = await fetch(`${apiProductBase}/${encodeURIComponent(id)}`);
                     let currentStock = null;
                     if (infoRes.ok) {
                         const info = await infoRes.json();
                         if (info && info.product) currentStock = info.product.stock;
                     }
-                    const promptMsg = currentStock !== null
-                        ? `Stok saat ini: ${currentStock}\nTambah stok (jumlah):`
-                        : 'Tambah stok (jumlah):';
+                    
+                    const promptMsg = currentQty > 0
+                        ? `Jumlah di kotak saat ini: ${currentQty}${currentStock !== null ? `\nStock global: ${currentStock}` : ''}\nTambah jumlah (jumlah):`
+                        : `Tambah jumlah (jumlah):`;
                     const amt = prompt(promptMsg, '1');
                     if (!amt) return;
                     const n = parseInt(amt, 10);
@@ -493,14 +574,21 @@
                     });
                     const j = await parseJsonResponse(res);
                     if (j && j.success) {
-                        const newStock = j.new_stock ?? null;
-                        if (newStock !== null) {
-                            const cell = document.querySelector(`td.prod-qty[data-id="${id}"]`);
-                            if (cell) cell.textContent = newStock;
-                            showTmpNotification(`Stok produk diperbarui (sekarang: ${newStock})`);
-                        } else {
-                            showTmpNotification('Stok produk diperbarui');
+                        // Update jumlah di kotak (pivot quantity sudah diupdate di backend)
+                        const newQty = currentQty + n;
+                        if (cell) {
+                            cell.textContent = newQty;
+                            // Update warna berdasarkan jumlah baru
+                            cell.className = cell.className.replace(/text-(gray|orange|red)-\d+/g, '');
+                            if (newQty > 5) {
+                                cell.classList.add('text-gray-700');
+                            } else if (newQty > 0) {
+                                cell.classList.add('text-orange-500');
+                            } else {
+                                cell.classList.add('text-red-500');
+                            }
                         }
+                        showTmpNotification(`Jumlah di kotak diperbarui (sekarang: ${newQty})`);
                     } else {
                         alert((j && j.message) || 'Gagal merestock produk');
                     }

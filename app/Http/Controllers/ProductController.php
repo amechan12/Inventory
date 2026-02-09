@@ -150,13 +150,43 @@ class ProductController extends Controller
             }
         }
 
-        // If box_id provided, attach or update pivot quantity without detaching other boxes
+        // Handle box assignment: if box_id provided, move product to that box (remove from old boxes first)
         if ($request->filled('box_id')) {
-            $box = Box::find($request->box_id);
+            $newBoxId = (int) $request->box_id;
+            $box = Box::find($newBoxId);
             if ($box) {
-                $qty = $request->input('box_quantity', 1);
-                $box->products()->syncWithoutDetaching([$product->id => ['quantity' => max(1, (int)$qty)]]);
+                // Get current boxes for this product
+                $currentBoxes = $product->boxes()->pluck('boxes.id')->toArray();
+                
+                // If product is already in the selected box, keep the current quantity (no change)
+                if (in_array($newBoxId, $currentBoxes)) {
+                    // Product already in this box, no need to change quantity
+                    // Quantity remains the same
+                } else {
+                    // Get current quantity from old box (if exists) or use default 1
+                    $currentQty = 1;
+                    $oldBox = $product->boxes()->first();
+                    if ($oldBox && $oldBox->pivot) {
+                        $currentQty = $oldBox->pivot->quantity ?? 1;
+                    }
+                    
+                    // If box_quantity is provided, use it; otherwise use current quantity
+                    $qty = $request->input('box_quantity');
+                    if ($qty === null || $qty === '') {
+                        $qty = $currentQty;
+                    } else {
+                        $qty = max(1, (int)$qty);
+                    }
+                    
+                    // Remove product from all current boxes first
+                    $product->boxes()->detach();
+                    // Then attach to the new box with the quantity
+                    $box->products()->attach($product->id, ['quantity' => $qty]);
+                }
             }
+        } else {
+            // If box_id is empty, remove product from all boxes
+            $product->boxes()->detach();
         }
 
         if ($request->wantsJson() || $request->ajax() || str_contains($request->header('accept', ''), 'application/json')) {
@@ -171,10 +201,35 @@ class ProductController extends Controller
     {
         $request->validate(['stock_added' => 'required|integer|min:1']);
 
-        $product->increment('stock', $request->stock_added);
+        $stockAdded = (int) $request->stock_added;
+        
+        // Update stock produk
+        $product->increment('stock', $stockAdded);
+        
+        // Refresh product untuk mendapatkan stock terbaru
+        $product->refresh();
+        
+        // Jika produk ada di kotak, juga update jumlah di kotak
+        // Update pivot quantity di semua kotak yang mengandung produk ini
+        $boxes = $product->boxes()->get();
+        if ($boxes->isNotEmpty()) {
+            foreach ($boxes as $box) {
+                $currentQty = $box->pivot->quantity ?? 0;
+                $newQty = $currentQty + $stockAdded;
+                $box->products()->updateExistingPivot($product->id, ['quantity' => $newQty]);
+            }
+        }
 
         if ($request->wantsJson() || $request->ajax() || str_contains($request->header('accept', ''), 'application/json')) {
-            return response()->json(['success' => true, 'message' => 'Stok barang berhasil ditambahkan', 'product_id' => $product->id, 'new_stock' => $product->stock]);
+            return response()->json([
+                'success' => true, 
+                'message' => 'Stok barang berhasil ditambahkan', 
+                'product_id' => $product->id, 
+                'new_stock' => $product->stock,
+                'stock_added' => $stockAdded,
+                'updated_boxes' => $boxes->isNotEmpty(),
+                'product' => $product->fresh()
+            ]);
         }
 
         return back()->with('success', 'Stok barang berhasil ditambahkan!');

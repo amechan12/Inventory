@@ -718,6 +718,34 @@
                 });
             }, 5000);
 
+            // Handle form submit untuk tambah barang - set stock berdasarkan box_quantity
+            const tambahForm = document.querySelector('#tambah form');
+            const mobileTambahForm = document.querySelector('#mobile-tambah form');
+            
+            function handleTambahFormSubmit(e) {
+                const form = e.target;
+                const boxId = form.querySelector('[name="box_id"]')?.value;
+                const boxQuantity = form.querySelector('[name="box_quantity"]')?.value || '1';
+                const stockInput = form.querySelector('[name="stock"]');
+                
+                // Jika kotak dipilih, set stock sama dengan jumlah di kotak
+                // Jika tidak ada kotak, tetap gunakan nilai default (0 atau bisa diubah ke 1)
+                if (boxId && boxQuantity) {
+                    stockInput.value = boxQuantity;
+                } else {
+                    // Jika tidak ada kotak, set stock ke 1 sebagai default
+                    stockInput.value = '1';
+                }
+            }
+            
+            if (tambahForm) {
+                tambahForm.addEventListener('submit', handleTambahFormSubmit);
+            }
+            
+            if (mobileTambahForm) {
+                mobileTambahForm.addEventListener('submit', handleTambahFormSubmit);
+            }
+
         });
     </script>
 @endsection
