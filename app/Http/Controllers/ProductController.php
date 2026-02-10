@@ -29,7 +29,7 @@ class ProductController extends Controller
             });
         }
 
-        // Build categories aggregation (name, slug, count)
+        // Bangun daftar kategori (nama, slug, jumlah produk)
         $allCategories = Product::whereNotNull('category')
             ->get()
             ->groupBy('category')
@@ -38,17 +38,24 @@ class ProductController extends Controller
                     'name' => $name,
                     'slug' => \Illuminate\Support\Str::slug($name),
                     'count' => $group->count(),
-                    'icon' => null,
                 ];
             })->values()->toArray();
 
-        // Apply category filter (slug -> original name)
+        // Filter berdasarkan kategori (slug -> nama asli)
         if ($request->filled('category')) {
             $catSlug = $request->input('category');
             $matched = collect($allCategories)->firstWhere('slug', $catSlug);
             if ($matched) {
                 $query->where('category', $matched['name']);
             }
+        }
+
+        // Filter berdasarkan kotak (produk yang berada di kotak tertentu)
+        if ($request->filled('box')) {
+            $boxId = (int) $request->input('box');
+            $query->whereHas('boxes', function ($q) use ($boxId) {
+                $q->where('boxes.id', $boxId);
+            });
         }
 
         // Apply segment filter by id
@@ -58,7 +65,8 @@ class ProductController extends Controller
 
         $products = $query->latest()->get();
         $segments = Segment::orderBy('name', 'asc')->get();
-        $boxes = Box::orderBy('name')->get();
+        // Kotak yang tersedia beserta jumlah produk di dalamnya
+        $boxes = Box::withCount('products')->orderBy('name')->get();
         $totalProducts = Product::count();
         $categories = $allCategories;
 

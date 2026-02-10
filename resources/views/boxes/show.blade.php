@@ -355,7 +355,15 @@
             }
 
             window.showTmpNotification = function(msg) {
-                const n = document.createElement('div'); n.className = 'fixed top-6 right-6 bg-black text-white p-3 rounded shadow-lg'; n.textContent = msg; document.body.appendChild(n); setTimeout(()=>{ n.remove(); }, 1800);
+                const n = document.createElement('div'); 
+                n.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black text-white px-6 py-4 rounded-lg shadow-2xl z-50 text-center min-w-[200px]'; 
+                n.textContent = msg; 
+                document.body.appendChild(n); 
+                setTimeout(()=>{ 
+                    n.style.transition = 'opacity 0.3s';
+                    n.style.opacity = '0';
+                    setTimeout(() => n.remove(), 300);
+                }, 2000);
             }
 
             // Quick add form handler
@@ -649,10 +657,14 @@
                     }
                     hideModal();
                     const n = document.createElement('div');
-                    n.className = 'fixed top-6 right-6 bg-black text-white p-3 rounded shadow-lg';
+                    n.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black text-white px-6 py-4 rounded-lg shadow-2xl z-50 text-center min-w-[200px]';
                     n.textContent = 'Produk diperbarui';
                     document.body.appendChild(n);
-                    setTimeout(() => { n.remove(); }, 1800);
+                    setTimeout(() => { 
+                        n.style.transition = 'opacity 0.3s';
+                        n.style.opacity = '0';
+                        setTimeout(() => n.remove(), 300);
+                    }, 2000);
                 } else if (j && j.errors) {
                     alert(Object.values(j.errors).flat().join('\n'));
                 } else {

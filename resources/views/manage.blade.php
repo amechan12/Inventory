@@ -45,7 +45,7 @@
     <div class="flex flex-col lg:flex-row lg:space-x-6">
         {{-- Products Grid --}}
         <div class="w-full lg:w-2/3 order-2 lg:order-1">
-            @include('components.category-filter', ['categories' => $categories ?? [], 'products' => $products, 'totalProducts' => $totalProducts ?? $products->count(), 'segments' => $segments ?? []])
+            @include('components.category-filter', ['categories' => $categories ?? [], 'boxes' => $boxes ?? [], 'products' => $products, 'totalProducts' => $totalProducts ?? $products->count()])
 
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
@@ -192,7 +192,7 @@
                             {{-- Segmen Lokasi removed per request --}}
 
                             <div>
-                                <label for="box_tambah" class="block text-sm font-medium text-gray-700 mb-2">Kotak (opsional)</label>
+                                <label for="box_tambah" class="block text-sm font-medium text-gray-700 mb-2">Kotak</label>
                                 <select id="box_tambah" name="box_id" class="input-field">
                                     <option value="">-- Pilih Kotak --</option>
                                     @foreach($boxes as $box)
@@ -242,7 +242,7 @@
                             {{-- Segmen Lokasi removed per request --}}
 
                             <div>
-                                <label for="box_edit" class="block text-sm font-medium text-gray-700 mb-2">Kotak (opsional)</label>
+                                <label for="box_edit" class="block text-sm font-medium text-gray-700 mb-2">Kotak</label>
                                 <select id="box_edit" name="box_id" class="input-field">
                                     <option value="">-- Pilih Kotak --</option>
                                     @foreach($boxes as $box)
@@ -348,7 +348,7 @@
                             {{-- Segmen Lokasi removed per request --}}
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Kotak (opsional)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Kotak</label>
                                 <select name="box_id" class="input-field">
                                     <option value="">-- Pilih Kotak --</option>
                                     @foreach($boxes as $box)
@@ -392,7 +392,7 @@
                             {{-- Segmen Lokasi removed per request --}}
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Kotak (opsional)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Kotak</label>
                                 <select id="mobile_box_edit" name="box_id" class="input-field">
                                     <option value="">-- Pilih Kotak --</option>
                                     @foreach($boxes as $box)
