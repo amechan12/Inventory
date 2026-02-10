@@ -35,7 +35,7 @@
                                     <span class="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
                                         <i class="fa-solid fa-box text-white text-lg"></i>
                                     </span>
-                                    <span class="text-base">Pinjam Barang</span>
+                                    <span class="text-base">Barang Masuk</span>
                                 </a>
 
                                 <a href="{{ route('loan.return') }}"

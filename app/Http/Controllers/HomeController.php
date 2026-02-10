@@ -134,13 +134,62 @@ class HomeController extends Controller
                 ->limit(5)
                 ->get();
 
+            // Fetch products with filters
+            $query = Product::query();
+
+            // Filter by category
+            if (request('category')) {
+                $query->where('category', request('category'));
+            }
+
+            // Filter by box
+            if (request('box')) {
+                $query->whereHas('boxes', function ($q) {
+                    $q->where('box_id', request('box'));
+                });
+            }
+
+            $products = $query->orderBy('name')->paginate(12);
+            $totalProducts = Product::count();
+
+            // Get all categories for filter
+            $categories = Product::select('category')
+                ->distinct()
+                ->orderBy('category')
+                ->get()
+                ->map(function ($product) {
+                    $categoryName = $product->category ?? 'Tanpa Kategori';
+                    $count = Product::where('category', $product->category)->count();
+                    return [
+                        'name' => $categoryName,
+                        'slug' => str($categoryName)->slug('-'),
+                        'count' => $count
+                    ];
+                })
+                ->sortBy('name')
+                ->values()
+                ->all();
+
+            // Get all boxes for filter
+            $boxes = DB::table('boxes')
+                ->leftJoin('box_product', 'boxes.id', '=', 'box_product.box_id')
+                ->select('boxes.id', 'boxes.name', 'boxes.barcode')
+                ->selectRaw('COUNT(DISTINCT box_product.product_id) as products_count')
+                ->groupBy('boxes.id', 'boxes.name', 'boxes.barcode')
+                ->orderBy('boxes.name')
+                ->get();
+
             return view('member.home', compact(
                 'activeLoans',
                 'pendingLoans',
                 'dueSoonLoans',
                 'currentLoans',
                 'topProductLabels',
-                'topProductData'
+                'topProductData',
+                'products',
+                'categories',
+                'boxes',
+                'totalProducts'
             ));
         }
 

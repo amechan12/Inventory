@@ -23,7 +23,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <p class="text-sm text-gray-600 mb-1">Stok</p>
-                    <p class="text-xl font-bold text-purple-600">{{ $product->stock }} pcs</p>
+                    <p class="text-xl font-bold text-purple-600">{{ $product->available_stock }} pcs</p>
                 </div>
                 @if($product->category)
                 <div class="col-span-2">

@@ -52,13 +52,24 @@ class AdminLoanController extends Controller
                 ->firstOrFail();
 
             // Check availability for all products in the transaction
+            // Validate by checking if consumeForApproval would succeed for each
             $insufficient = [];
             foreach ($transaction->products as $prod) {
-                $qty = $prod->pivot->quantity ?? 1;
-                $productModel = Product::findOrFail($prod->id);
-                $availableStock = $productModel->stock - $productModel->reserved_stock;
-                if ($availableStock < $qty) {
-                    $insufficient[] = "{$productModel->name} (dibutuhkan {$qty}, tersedia {$availableStock})";
+                $qty = (int) ($prod->pivot->quantity ?? 1);
+                $productModel = Product::with('boxes')->findOrFail($prod->id);
+
+                // Check if consumeForApproval will succeed
+                $boxQty = $productModel->getTotalQuantityInBoxes();
+                if ($boxQty > 0) {
+                    // Product is in boxes; check total box quantity
+                    if ($boxQty < $qty) {
+                        $insufficient[] = "{$productModel->name} (dibutuhkan {$qty}, tersedia di kotak {$boxQty})";
+                    }
+                } else {
+                    // Product is not in any box; check product.stock
+                    if ($productModel->stock < $qty) {
+                        $insufficient[] = "{$productModel->name} (dibutuhkan {$qty}, stok fisik {$productModel->stock})";
+                    }
                 }
             }
 
@@ -69,11 +80,17 @@ class AdminLoanController extends Controller
             DB::beginTransaction();
 
             // All good -> apply changes for every product in this transaction
+            // Use Product::consumeForApproval to deduct from box pivots when applicable,
+            // otherwise deduct from product.stock. Then clear reserved_stock.
             foreach ($transaction->products as $prod) {
                 $qty = $prod->pivot->quantity ?? 1;
-                $productModel = Product::findOrFail($prod->id);
+                $productModel = Product::with('boxes')->findOrFail($prod->id);
+
+                // Attempt to consume quantity (will throw if insufficient)
+                $productModel->consumeForApproval((int) $qty);
+
+                // Clear reservation
                 $productModel->decrement('reserved_stock', $qty);
-                $productModel->decrement('stock', $qty);
             }
 
             // Check if this is a permanent borrow (duration = 0)
@@ -149,11 +166,21 @@ class AdminLoanController extends Controller
             // Check availability for all products in this transaction
             $insufficient = [];
             foreach ($transaction->products as $prod) {
-                $qty = $prod->pivot->quantity ?? 1;
-                $productModel = Product::findOrFail($prod->id);
-                $availableStock = $productModel->stock - $productModel->reserved_stock;
-                if ($availableStock < $qty) {
-                    $insufficient[] = "{$productModel->name} (dibutuhkan {$qty}, tersedia {$availableStock})";
+                $qty = (int) ($prod->pivot->quantity ?? 1);
+                $productModel = Product::with('boxes')->findOrFail($prod->id);
+
+                // Check if consumeForApproval will succeed
+                $boxQty = $productModel->getTotalQuantityInBoxes();
+                if ($boxQty > 0) {
+                    // Product is in boxes; check total box quantity
+                    if ($boxQty < $qty) {
+                        $insufficient[] = "{$productModel->name} (dibutuhkan {$qty}, tersedia di kotak {$boxQty})";
+                    }
+                } else {
+                    // Product is not in any box; check product.stock
+                    if ($productModel->stock < $qty) {
+                        $insufficient[] = "{$productModel->name} (dibutuhkan {$qty}, stok fisik {$productModel->stock})";
+                    }
                 }
             }
 
@@ -165,12 +192,16 @@ class AdminLoanController extends Controller
             try {
                 DB::beginTransaction();
 
-                // Deduct reserved_stock and stock for each product
+                // Deduct stock (permanently consume) and reserved_stock (clear reservation) for each product
                 foreach ($transaction->products as $prod) {
-                    $qty = $prod->pivot->quantity ?? 1;
-                    $productModel = Product::findOrFail($prod->id);
+                    $qty = (int) ($prod->pivot->quantity ?? 1);
+                    $productModel = Product::with('boxes')->findOrFail($prod->id);
+
+                    // Attempt to consume quantity (will throw if insufficient)
+                    $productModel->consumeForApproval($qty);
+
+                    // Clear reservation
                     $productModel->decrement('reserved_stock', $qty);
-                    $productModel->decrement('stock', $qty);
                 }
 
                 // Check if this is a permanent borrow (duration = 0)

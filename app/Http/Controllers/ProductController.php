@@ -6,6 +6,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
@@ -73,6 +74,67 @@ class ProductController extends Controller
         return view('manage', compact('products', 'segments', 'categories', 'totalProducts', 'boxes'));
     }
 
+    // View products untuk user/anggota (read-only)
+    public function viewProducts(Request $request)
+    {
+        // Build categories list with proper distinction
+        $categoryData = Product::whereNotNull('category')
+            ->pluck('category')
+            ->unique()
+            ->map(function ($categoryName) {
+                return [
+                    'name' => trim($categoryName),
+                    'slug' => str(trim($categoryName))->slug('-'),
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        // Count products per category
+        $allCategories = collect($categoryData)->map(function ($cat) {
+            $count = Product::where('category', $cat['name'])->count();
+            return array_merge($cat, ['count' => $count]);
+        })
+        ->sortBy('name')
+        ->values()
+        ->all();
+
+        // Start building query
+        $query = Product::query();
+
+        // Filter berdasarkan kategori
+        if ($request->filled('category')) {
+            $catSlug = $request->input('category');
+            $matched = collect($allCategories)->firstWhere('slug', $catSlug);
+            if ($matched) {
+                $query->where('category', '=', $matched['name']);
+            }
+        }
+
+        // Filter berdasarkan kotak
+        if ($request->filled('box')) {
+            $boxId = (int) $request->input('box');
+            $query->whereHas('boxes', function ($q) use ($boxId) {
+                $q->where('boxes.id', '=', $boxId);
+            });
+        }
+
+        // Get filtered and paginated products
+        $products = $query->orderBy('name')->paginate(12);
+        $totalProducts = Product::count();
+
+        // Get all boxes for filter
+        $boxes = DB::table('boxes')
+            ->leftJoin('box_product', 'boxes.id', '=', 'box_product.box_id')
+            ->select('boxes.id', 'boxes.name', 'boxes.barcode')
+            ->selectRaw('COUNT(DISTINCT box_product.product_id) as products_count')
+            ->groupBy('boxes.id', 'boxes.name', 'boxes.barcode')
+            ->orderBy('boxes.name')
+            ->get();
+
+        return view('products-view', compact('products', 'allCategories', 'totalProducts', 'boxes'));
+    }
+
     // Menyimpan produk baru
     public function store(Request $request)
     {
@@ -84,42 +146,52 @@ class ProductController extends Controller
             'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $path = null;
-        if ($request->hasFile('image_path')) {
-            $path = $request->file('image_path')->store('products', 'public');
-        }
+        try {
+            DB::beginTransaction();
 
-        $product = Product::create([
-            'name' => $request->name,
-            'stock' => $request->stock,
-            'category' => $request->category,
-            'image_path' => $path,
-            'segment_id' => $request->segment_id,
-        ]);
-
-        // Attach to box if provided
-        $addedToBox = false;
-        $addedQty = null;
-        if ($request->filled('box_id')) {
-            $box = Box::find($request->box_id);
-            if ($box) {
-                $qty = $request->input('box_quantity', 1);
-                $box->products()->attach($product->id, ['quantity' => max(1, (int)$qty)]);
-                $addedToBox = true;
-                $addedQty = max(1, (int)$qty);
+            $path = null;
+            if ($request->hasFile('image_path')) {
+                $path = $request->file('image_path')->store('products', 'public');
             }
-        }
 
-        if ($request->wantsJson() || $request->ajax() || str_contains($request->header('accept', ''), 'application/json')) {
-            return response()->json([
-                'success' => true,
-                'product' => $product->fresh(),
-                'added_to_box' => $addedToBox,
-                'quantity' => $addedQty,
+            $product = Product::create([
+                'name' => $request->name,
+                'stock' => $request->stock,
+                'category' => $request->category,
+                'image_path' => $path,
+                'segment_id' => $request->segment_id,
             ]);
-        }
 
-        return back()->with('success', 'Barang berhasil ditambahkan!');
+            // Attach to box if provided
+            $addedToBox = false;
+            $addedQty = null;
+            if ($request->filled('box_id')) {
+                $box = Box::find($request->box_id);
+                if ($box) {
+                    $qty = $request->input('box_quantity', 1);
+                    $finalQty = max(1, (int)$qty);
+                    $box->products()->attach($product->id, ['quantity' => $finalQty]);
+                    $addedToBox = true;
+                    $addedQty = $finalQty;
+                }
+            }
+
+            DB::commit();
+
+            if ($request->wantsJson() || $request->ajax() || str_contains($request->header('accept', ''), 'application/json')) {
+                return response()->json([
+                    'success' => true,
+                    'product' => $product->fresh(),
+                    'added_to_box' => $addedToBox,
+                    'quantity' => $addedQty,
+                ]);
+            }
+
+            return back()->with('success', 'Barang berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menambahkan barang: ' . $e->getMessage());
+        }
     }
 
     // Update produk
@@ -135,73 +207,74 @@ class ProductController extends Controller
             'remove_image' => 'nullable',
         ]);
 
-        // Update basic fields
-        $product->update($request->only('name', 'category', 'segment_id'));
+        try {
+            DB::beginTransaction();
 
-        // Handle new uploaded image
-        if ($request->hasFile('image_path')) {
-            $path = $request->file('image_path')->store('products', 'public');
+            // Update basic fields
+            $product->update($request->only('name', 'category', 'segment_id'));
 
-            // delete old image if exists
-            if ($product->image_path) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image_path);
-            }
+            // Handle new uploaded image
+            if ($request->hasFile('image_path')) {
+                $path = $request->file('image_path')->store('products', 'public');
 
-            $product->image_path = $path;
-            $product->save();
-        } else if ($request->filled('remove_image')) {
-            // Remove existing image if requested
-            if ($product->image_path) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image_path);
-                $product->image_path = null;
+                // delete old image if exists
+                if ($product->image_path) {
+                    Storage::disk('public')->delete($product->image_path);
+                }
+
+                $product->image_path = $path;
                 $product->save();
-            }
-        }
-
-        // Handle box assignment: if box_id provided, move product to that box (remove from old boxes first)
-        if ($request->filled('box_id')) {
-            $newBoxId = (int) $request->box_id;
-            $box = Box::find($newBoxId);
-            if ($box) {
-                // Get current boxes for this product
-                $currentBoxes = $product->boxes()->pluck('boxes.id')->toArray();
-                
-                // If product is already in the selected box, keep the current quantity (no change)
-                if (in_array($newBoxId, $currentBoxes)) {
-                    // Product already in this box, no need to change quantity
-                    // Quantity remains the same
-                } else {
-                    // Get current quantity from old box (if exists) or use default 1
-                    $currentQty = 1;
-                    $oldBox = $product->boxes()->first();
-                    if ($oldBox && $oldBox->pivot) {
-                        $currentQty = $oldBox->pivot->quantity ?? 1;
-                    }
-                    
-                    // If box_quantity is provided, use it; otherwise use current quantity
-                    $qty = $request->input('box_quantity');
-                    if ($qty === null || $qty === '') {
-                        $qty = $currentQty;
-                    } else {
-                        $qty = max(1, (int)$qty);
-                    }
-                    
-                    // Remove product from all current boxes first
-                    $product->boxes()->detach();
-                    // Then attach to the new box with the quantity
-                    $box->products()->attach($product->id, ['quantity' => $qty]);
+            } else if ($request->filled('remove_image')) {
+                // Remove existing image if requested
+                if ($product->image_path) {
+                    Storage::disk('public')->delete($product->image_path);
+                    $product->image_path = null;
+                    $product->save();
                 }
             }
-        } else {
-            // If box_id is empty, remove product from all boxes
-            $product->boxes()->detach();
-        }
 
-        if ($request->wantsJson() || $request->ajax() || str_contains($request->header('accept', ''), 'application/json')) {
-            return response()->json(['success' => true, 'product' => $product->fresh()]);
-        }
+            // Handle box assignment: if box_id provided, move product to that box
+            if ($request->filled('box_id')) {
+                $newBoxId = (int) $request->box_id;
+                $box = Box::find($newBoxId);
+                if ($box) {
+                    // Get current boxes for this product (reload to be sure)
+                    $product->load('boxes');
+                    $currentBoxIds = $product->boxes()->pluck('boxes.id')->toArray();
+                    
+                    // Get box_quantity from input or default to 1
+                    $newQty = (int) ($request->input('box_quantity') ?? 1);
+                    if ($newQty < 1) {
+                        $newQty = 1;
+                    }
+                    
+                    // If product is already in the selected box
+                    if (in_array($newBoxId, $currentBoxIds)) {
+                        // Update quantity in the box
+                        $product->boxes()->updateExistingPivot($newBoxId, ['quantity' => $newQty]);
+                    } else {
+                        // Remove product from all current boxes first
+                        $product->boxes()->detach();
+                        // Then attach to the new box with the quantity
+                        $box->products()->attach($product->id, ['quantity' => $newQty]);
+                    }
+                }
+            } else {
+                // If box_id is empty, remove product from all boxes
+                $product->boxes()->detach();
+            }
 
-        return back()->with('success', 'Barang berhasil diperbarui!');
+            DB::commit();
+
+            if ($request->wantsJson() || $request->ajax() || str_contains($request->header('accept', ''), 'application/json')) {
+                return response()->json(['success' => true, 'product' => $product->fresh()]);
+            }
+
+            return back()->with('success', 'Barang berhasil diperbarui!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal memperbarui barang: ' . $e->getMessage());
+        }
     }
 
     // Restock produk

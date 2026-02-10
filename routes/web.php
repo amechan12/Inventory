@@ -44,6 +44,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/return', [LoanController::class, 'return'])->name('loan.return');
     Route::post('/return/submit', [LoanController::class, 'submitReturn'])->name('loan.return.submit');
 
+    // --- RUTE UNTUK ANGGOTA (View Products) ---
+    Route::middleware(['role:anggota'])->group(function () {
+        Route::get('/products-view', [ProductController::class, 'viewProducts'])->name('products.view');
+    });
+
     // --- RUTE HANYA UNTUK KASIR & PENGELOLA ---
     Route::middleware(['role:kasir,pengelola'])->group(function () {
         // Product Management Routes

@@ -50,7 +50,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <form action="{{ route('loan.return.submit') }}" method="POST" class="mt-3">
+                            <form action="{{ route('loan.return.submit') }}" method="POST" class="mt-3 submit-return-form">
                                 @csrf
                                 <input type="hidden" name="transaction_id" value="{{ $loan->id }}">
                                 <input type="hidden" name="segment_id" value="{{ $segment->id }}">
@@ -84,7 +84,39 @@
 
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script>
+        // Toast notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className =
+                `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg ${type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-red-500 to-rose-500'} text-white transform translate-x-full transition-transform duration-300`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} text-xl"></i>
+                    <span class="font-medium">${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.classList.remove('translate-x-full'), 100);
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Handle form submission for return request
+            document.querySelectorAll('.submit-return-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const button = this.querySelector('button[type="submit"]');
+                    button.disabled = true;
+                    button.style.opacity = '0.6';
+                    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i><span>Mengirim...</span>';
+                    showNotification('Pengajuan pengembalian sedang diproses...', 'success');
+                });
+            });
+
             const qrScannerBtn = document.getElementById('qr-scanner-btn');
             const qrScannerModal = document.getElementById('qr-scanner-modal');
             const closeQrScanner = document.getElementById('close-qr-scanner');

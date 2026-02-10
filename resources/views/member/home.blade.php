@@ -16,7 +16,7 @@
                     <span class="w-10 h-10 rounded-lg flex items-center justify-center">
                         <i class="fa-solid fa-box text-white text-lg"></i>
                     </span>
-                    <span class="text-base">Pinjam Barang</span>
+                    <span class="text-base">Barang Masuk</span>
                 </a>
 
                 <a href="{{ route('loan.return') }}" class="flex items-center gap-3 px-5 h-12  rounded-xl text-white font-semibold tracking-wide shadow-sm bg-gradient-to-r from-emerald-500 to-teal-400">
@@ -142,6 +142,105 @@
                 @endforeach
             </div>
         </div>
+    </div>
+
+    {{-- Daftar Barang yang Tersedia --}}
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div>
+                <h3 class="text-2xl font-bold text-gray-800">Daftar Barang yang Tersedia</h3>
+                <p class="text-sm text-gray-500 mt-2">Lihat semua barang yang dapat dipinjam</p>
+            </div>
+        </div>
+
+        {{-- Filters --}}
+        @include('components.category-filter', ['categories' => $categories ?? [], 'boxes' => $boxes ?? [], 'products' => $products, 'totalProducts' => $totalProducts ?? $products->count()])
+
+        {{-- Products Grid --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            @forelse ($products as $product)
+                <div
+                    class="bg-white rounded-2xl shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col">
+                    <div
+                        class="w-full aspect-square bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
+                        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+
+                        @php $avail = $product->available_stock; @endphp
+                        @if ($avail <= 1)
+                            <div
+                                class="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
+                                @if ($avail == 0)
+                                    Kosong
+                                @else
+                                    Sisa {{ $avail }}
+                                @endif
+                            </div>
+                        @else
+                            <div
+                                class="absolute top-3 left-3 bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
+                                Tersedia {{ $avail }}
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="p-4 flex-1 flex flex-col">
+                        <h3 class="text-lg font-bold text-gray-800 line-clamp-2 mb-2">{{ $product->name }}</h3>
+                        
+                        <div class="flex justify-between items-center mb-4 text-sm">
+                            @if($product->category)
+                                <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-medium">{{ $product->category }}</span>
+                            @endif
+                            <p class="font-semibold {{ $avail > 5 ? 'text-gray-500' : ($avail > 0 ? 'text-orange-500' : 'text-red-500') }}">
+                                Stok: {{ $avail }}
+                            </p>
+                        </div>
+
+                        {{-- Box Info --}}
+                        @if($product->boxes->count() > 0)
+                            <div class="mb-4 text-xs bg-purple-50 border border-purple-200 rounded-lg p-2">
+                                <p class="text-purple-700 font-medium">
+                                    <i class="fa-solid fa-box mr-1"></i>
+                                    @foreach($product->boxes as $box)
+                                        @if($loop->count > 1)
+                                            {{ $box->name }}{{ !$loop->last ? ',' : '' }}
+                                        @else
+                                            {{ $box->name }}
+                                        @endif
+                                    @endforeach
+                                </p>
+                            </div>
+                        @endif
+
+                        {{-- Action Button --}}
+                        <a href="{{ route('loan.borrow') }}" 
+                            class="mt-auto w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-center py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium {{ $avail == 0 ? 'opacity-50 cursor-not-allowed' : '' }}"
+                            {{ $avail == 0 ? 'onclick="return false;"' : '' }}>
+                            <i class="fa-solid fa-plus-circle mr-1"></i>Pinjam
+                        </a>
+                    </div>
+                </div>
+            @empty
+                <div class="sm:col-span-2 xl:col-span-3 text-center py-20">
+                    <i class="fa-solid fa-box-open text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">
+                        @if (request('search'))
+                            Barang dengan nama "{{ request('search') }}" tidak ditemukan.
+                        @elseif(request('category') || request('box'))
+                            Barang dengan filter ini tidak ditemukan.
+                        @else
+                            Belum ada barang yang tersedia.
+                        @endif
+                    </h3>
+                </div>
+            @endforelse
+        </div>
+
+        {{-- Pagination --}}
+        @if($products->hasPages())
+            <div class="mt-8">
+                {{ $products->links() }}
+            </div>
+        @endif
     </div>
 </div>
 @endsection

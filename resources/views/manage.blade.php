@@ -68,13 +68,14 @@
                             class="w-full aspect-square bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center relative">
                                 <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
 
-                            @if ($product->stock <= 1)
+                            @php $avail = $product->available_stock; @endphp
+                            @if ($avail <= 1)
                                 <div
                                     class="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
-                                    @if ($product->stock == 0)
+                                    @if ($avail == 0)
                                         Kosong
                                     @else
-                                        Sisa {{ $product->stock }}
+                                        Sisa {{ $avail }}
                                     @endif
                                 </div>
                             @endif
@@ -95,8 +96,8 @@
                             <h3 class="text-lg font-bold text-gray-800 line-clamp-2 mb-2">{{ $product->name }}</h3>
                             <div class="flex justify-end items-center mb-4">
                                 <p
-                                    class="text-sm font-semibold {{ $product->stock > 5 ? 'text-gray-500' : ($product->stock > 0 ? 'text-orange-500' : 'text-red-500') }}">
-                                    Stok: {{ $product->stock }}
+                                    class="text-sm font-semibold {{ $avail > 5 ? 'text-gray-500' : ($avail > 0 ? 'text-orange-500' : 'text-red-500') }}">
+                                    Stok: {{ $avail }}
                                 </p>
                             </div>
 
@@ -107,6 +108,7 @@
                                         class="edit-btn flex-1 bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 text-sm py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium border border-blue-100"
                                         data-id="{{ $product->id }}" data-name="{{ $product->name }}"
                                         data-stock="{{ $product->stock }}"
+                                        data-available-stock="{{ $product->available_stock }}"
                                         data-category="{{ $product->category }}"
                                         data-box-id="{{ optional($product->boxes->first())->id }}"
                                         data-box-quantity="{{ optional(optional($product->boxes->first())->pivot)->quantity }}"
@@ -116,19 +118,9 @@
                                     <button
                                         class="restock-btn flex-1 bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-700 text-sm py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium border border-yellow-100"
                                         data-id="{{ $product->id }}" data-name="{{ $product->name }}"
-                                        data-price="{{ $product->price }}" data-stock="{{ $product->stock }}">
+                                        data-price="{{ $product->price }}" data-stock="{{ $product->stock }}" data-available-stock="{{ $product->available_stock }}">
                                         <i class="fa-solid fa-plus-circle mr-1"></i>Restock
                                     </button>
-                                </div>
-
-                                {{-- QR Code Button --}}
-                                <div class="flex gap-2">
-                                    @php $box = $product->boxes->first(); @endphp
-                                    <a href="{{ $box ? route('boxes.qr.show', $box->id) : route('products.qr.show', $product->id) }}"
-                                            class="flex-1 bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 text-sm py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium border border-purple-100 text-center inline-block"
-                                            title="Lihat QR Code">
-                                            <i class="fa-solid fa-qrcode mr-1"></i>Lihat QR
-                                        </a>
                                 </div>
                             </div>
                         </div>

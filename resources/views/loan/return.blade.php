@@ -1,6 +1,6 @@
 @extends('layout')
 
-@section('title', 'Kembalikan Barang')
+@section('title', 'Barang Keluar')
 
 @section('content')
     {{-- Success/Error Messages --}}
@@ -34,7 +34,7 @@
 
     <div class="max-w-6xl mx-auto">
         <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
-            <i class="fa-solid fa-rotate-left mr-3"></i>Kembalikan Barang
+            <i class="fa-solid fa-rotate-left mr-3"></i>Barang Keluar
         </h1>
 
         {{-- QR Scanner Section --}}
@@ -119,7 +119,39 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <script>
+        // Toast notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className =
+                `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg ${type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-red-500 to-rose-500'} text-white transform translate-x-full transition-transform duration-300`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} text-xl"></i>
+                    <span class="font-medium">${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.classList.remove('translate-x-full'), 100);
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Handle form submission for return request
+            document.querySelectorAll('.submit-return-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const button = this.querySelector('button[type="submit"]');
+                    button.disabled = true;
+                    button.style.opacity = '0.6';
+                    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i><span>Mengirim...</span>';
+                    showNotification('Pengajuan pengembalian sedang diproses...', 'success');
+                });
+            });
+
             const qrScannerBtn = document.getElementById('qr-scanner-btn');
             const qrScannerModal = document.getElementById('qr-scanner-modal');
             const closeQrScanner = document.getElementById('close-qr-scanner');

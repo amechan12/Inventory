@@ -26,4 +26,11 @@ class Box extends Model
     {
         return $this->belongsTo(Segment::class);
     }
-}
+
+    /**
+     * Get total quantity of all products in this box
+     */
+    public function getTotalQuantity()
+    {
+        return $this->products()->sum('box_product.quantity') ?? 0;
+    }}

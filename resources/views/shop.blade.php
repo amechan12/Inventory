@@ -117,12 +117,13 @@
                             </div>
 
                             @if ($product->stock <= 5)
+                                @php $avail = $product->available_stock; @endphp
                                 <div
                                     class="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
-                                    @if ($product->stock == 0)
+                                    @if ($avail == 0)
                                         Habis
                                     @else
-                                        Sisa {{ $product->stock }}
+                                        Sisa {{ $avail }}
                                     @endif
                                 </div>
                             @endif
@@ -141,11 +142,11 @@
                                     class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                                     Rp {{ number_format($product->price, 0, ',', '.') }}
                                 </span>
-                                <span class="text-sm text-gray-500">Stok: {{ $product->stock }}</span>
+                                <span class="text-sm text-gray-500">Stok: {{ $avail }}</span>
                             </div>
                             <button
-                                class="add-to-cart-btn w-full py-3 rounded-xl font-semibold transition-all {{ $product->stock <= 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:shadow-lg hover:scale-105' }}"
-                                {{ $product->stock <= 0 ? 'disabled' : '' }}>
+                                class="add-to-cart-btn w-full py-3 rounded-xl font-semibold transition-all {{ $avail <= 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:shadow-lg hover:scale-105' }}"
+                                {{ $avail <= 0 ? 'disabled' : '' }}>
                                 @if ($product->stock <= 0)
                                     <i class="fa-solid fa-ban mr-2"></i>Stok Habis
                                 @else
@@ -449,7 +450,9 @@
                         if (data.success) {
                             const product = data.product;
 
-                            if (product.stock <= 0) {
+                            const avail = (typeof product.available_stock !== 'undefined') ? parseInt(product.available_stock || '0', 10) : (parseInt(product.stock || '0', 10) || 0);
+
+                            if (avail <= 0) {
                                 showNotification('Produk ini stoknya habis!', 'error');
                                 return;
                             }
@@ -457,7 +460,7 @@
                             const existingItem = cart.find(item => item.id === product.id);
                             const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
 
-                            if (currentQuantityInCart >= product.stock) {
+                            if (currentQuantityInCart >= avail) {
                                 showNotification('Stok tidak mencukupi!', 'error');
                                 return;
                             }
@@ -470,7 +473,7 @@
                                     name: product.name,
                                     price: product.price,
                                     quantity: 1,
-                                    maxStock: product.stock
+                                    maxStock: avail
                                 });
                             }
 

@@ -113,14 +113,14 @@ class LoanController extends Controller
     // API untuk mendapatkan info produk via QR
     public function getProductByQR($id)
     {
-        $product = Product::find($id);
+        $product = Product::with('boxes')->find($id);
 
         if (!$product) {
             return response()->json(['error' => 'Produk tidak ditemukan'], 404);
         }
 
-        // Hitung stok tersedia (stock - reserved_stock)
-        $availableStock = $product->stock - $product->reserved_stock;
+        // Hitung stok tersedia dengan mempertimbangkan kotak
+        $availableStock = $product->getAvailableStockForBorrow();
 
         return response()->json([
             'success' => true,
@@ -131,7 +131,7 @@ class LoanController extends Controller
                 'category' => $product->category,
                 'stock' => $product->stock,
                 'reserved_stock' => $product->reserved_stock,
-                'available_stock' => max(0, $availableStock),
+                'available_stock' => $availableStock,
                 'image_path' => $product->image_url,
             ]
         ]);
@@ -150,15 +150,15 @@ class LoanController extends Controller
         try {
             DB::beginTransaction();
 
-            $product = Product::findOrFail($request->product_id);
+            $product = Product::with('boxes')->findOrFail($request->product_id);
 
             // Determine requested quantity
             $quantity = (int) ($request->input('quantity', 1));
             $duration = (int) $request->duration;
             $isPermanent = $duration === 0;
 
-            // Cek stok tersedia (stock - reserved_stock)
-            $availableStock = $product->stock - $product->reserved_stock;
+            // Cek stok tersedia menggunakan method yang mempertimbangkan kotak
+            $availableStock = $product->getAvailableStockForBorrow();
 
             if ($availableStock < $quantity) {
                 throw new \Exception('Barang tidak tersedia dalam jumlah yang diminta. Tersedia: ' . $availableStock);

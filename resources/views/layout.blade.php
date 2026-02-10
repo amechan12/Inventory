@@ -234,13 +234,13 @@
                     <a href="{{ route('loan.borrow') }}"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('borrow') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-box text-lg"></i>
-                        <span class="font-medium sidebar-text">Pinjam Barang</span>
+                        <span class="font-medium sidebar-text">Barang Masuk</span>
                     </a>
 
                     <a href="{{ route('loan.return') }}"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('return') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-rotate-left text-lg"></i>
-                        <span class="font-medium sidebar-text">Kembalikan Barang</span>
+                        <span class="font-medium sidebar-text">Barang Keluar</span>
                     </a>
 
                     @if (Auth::user()->role == 'pengelola')
@@ -270,6 +270,15 @@
                             class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('manage-users') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
                             <i class="fa-solid fa-users-cog text-lg"></i>
                             <span class="font-medium sidebar-text">Kelola Pengguna</span>
+                        </a>
+                    @endif
+
+                    {{-- Daftar Barang untuk anggota/user --}}
+                    @if (Auth::user()->role == 'anggota')
+                        <a href="{{ route('products.view') }}"
+                            class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->is('products-view') ? 'active' : 'text-gray-600 hover:bg-gray-100' }}">
+                            <i class="fa-solid fa-list text-lg"></i>
+                            <span class="font-medium sidebar-text">Daftar Barang</span>
                         </a>
                     @endif
 

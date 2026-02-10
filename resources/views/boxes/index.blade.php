@@ -47,8 +47,17 @@
 
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mb-6">
 
-        <div class="flex items-center gap-3 mb-6">
-            <a href="#" id="openCreateBox" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm">Tambah Kotak</a>
+        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 mb-6">
+            <a href="#" id="openCreateBox" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm">Tambah Kotak</a>
+            
+            <div class="flex-1 relative">
+                <select id="filter-segment" class="w-full border border-gray-200 rounded-xl shadow-sm py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">-- Semua Segmen --</option>
+                    @foreach($segments as $segment)
+                        <option value="{{ $segment->id }}">{{ $segment->name }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
 
         @if (session('success'))
@@ -58,7 +67,7 @@
         @if($boxes->count() > 0)
             <div id="boxes-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($boxes as $box)
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col justify-between min-h-[12rem]">
+                    <div class="box-card bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col justify-between min-h-[12rem]" data-segment-id="{{ $box->segment_id ?? '' }}" data-segment-name="{{ $box->segment?->name ?? '' }}">
                         <div>
                             <div class="flex items-start justify-between">
                                 <div>
@@ -212,6 +221,45 @@
 
             if (closeEdit) closeEdit.addEventListener('click', function(){ editModal.classList.add('hidden'); });
             if (editModal) editModal.addEventListener('click', function(e){ if (e.target === editModal) editModal.classList.add('hidden'); });
+
+            // Filter boxes by segment
+            const filterSegment = document.getElementById('filter-segment');
+            const boxCards = document.querySelectorAll('.box-card');
+            const boxesGrid = document.getElementById('boxes-grid');
+
+            if (filterSegment) {
+                filterSegment.addEventListener('change', function() {
+                    const selectedSegmentId = this.value;
+                    let visibleCount = 0;
+                    let noResultsDiv = document.getElementById('no-filter-results');
+
+                    boxCards.forEach(card => {
+                        const cardSegmentId = card.dataset.segmentId;
+                        
+                        if (!selectedSegmentId || cardSegmentId === selectedSegmentId) {
+                            card.style.display = '';
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    // Remove existing no results message
+                    if (noResultsDiv) {
+                        noResultsDiv.remove();
+                    }
+
+                    // Show no results message if needed
+                    if (visibleCount === 0 && selectedSegmentId) {
+                        const segmentName = this.options[this.selectedIndex].text;
+                        const noResults = document.createElement('div');
+                        noResults.id = 'no-filter-results';
+                        noResults.className = 'col-span-full text-center py-12 text-gray-500';
+                        noResults.innerHTML = '<i class="fa-solid fa-inbox text-4xl text-gray-300 mb-3 block"></i><p class="text-lg font-medium">Tidak ada kotak di segmen "' + segmentName + '"</p>';
+                        boxesGrid.parentElement.insertBefore(noResults, boxesGrid.nextElementSibling);
+                    }
+                });
+            }
         });
     </script>
 

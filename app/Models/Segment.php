@@ -31,4 +31,24 @@ class Segment extends Model
 
         return asset('assets/img/defaultsegmen.png');
     }
+
+    /**
+     * Get total count of products in this segment
+     * Includes both direct products and products in boxes of this segment
+     */
+    public function getTotalProductCount()
+    {
+        // Count direct products (via segment_id)
+        $directCount = $this->products()->count();
+
+        // Count products in boxes of this segment
+        $boxProducts = Box::where('segment_id', $this->id)
+            ->with('products')
+            ->get()
+            ->reduce(function ($carry, $box) {
+                return $carry + $box->products->count();
+            }, 0);
+
+        return $directCount + $boxProducts;
+    }
 }

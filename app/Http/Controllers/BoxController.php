@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use App\Models\Box;
 use App\Models\Product;
 use App\Models\Segment;
+use Illuminate\Support\Facades\DB;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 
@@ -65,17 +66,37 @@ class BoxController extends Controller
             'products.*.quantity' => 'nullable|integer|min:1'
         ]);
 
-        $sync = [];
-        if (!empty($data['products'])) {
-            foreach ($data['products'] as $p) {
-                $qty = isset($p['quantity']) && $p['quantity'] > 0 ? (int) $p['quantity'] : 1;
-                $sync[$p['id']] = ['quantity' => $qty];
+        try {
+            DB::beginTransaction();
+
+            // Get current products in this box BEFORE update
+            $currentProducts = $box->products()->pluck('product_id')->toArray();
+            
+            // Build new sync array with new quantities
+            $sync = [];
+            if (!empty($data['products'])) {
+                foreach ($data['products'] as $p) {
+                    $qty = isset($p['quantity']) && $p['quantity'] > 0 ? (int) $p['quantity'] : 1;
+                    $sync[$p['id']] = ['quantity' => $qty];
+                }
             }
+
+            // Find products that are being removed (not in new sync)
+            $productsToRemove = array_diff($currentProducts, array_keys($sync));
+            
+            // Find products that are being added or updated
+            $newOrUpdatedProducts = array_keys($sync);
+
+            // Update box-product relationships
+            $box->products()->sync($sync);
+
+            DB::commit();
+
+            return redirect()->route('boxes.show', $box)->with('success', 'Isi kotak diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal memperbarui isi kotak: ' . $e->getMessage());
         }
-
-        $box->products()->sync($sync);
-
-        return redirect()->route('boxes.show', $box)->with('success', 'Isi kotak diperbarui.');
     }
 
     public function edit(Box $box)

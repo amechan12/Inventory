@@ -31,7 +31,7 @@
                 <div>
                     <p class="text-sm text-gray-600">Produk di Segmen</p>
                     <p class="text-2xl font-bold text-orange-600">
-                        {{ $segments->reduce(function ($carry, $s) {return $carry + $s->products->count();}, 0) }}</p>
+                        {{ $segments->reduce(function ($carry, $s) {return $carry + $s->getTotalProductCount();}, 0) }}</p>
                 </div>
                 <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
                     <i class="fa-solid fa-boxes text-indigo-600"></i>
@@ -55,10 +55,20 @@
 
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mb-6">
 
-        <div class="flex items-center gap-3 mb-6">
+        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 mb-6">
             <a href="{{ route('segments.create') }}" id="openCreateSegment"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm">Tambah
+                class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm">Tambah
                 Segmen</a>
+            
+            <div class="flex-1 relative">
+                <input type="text" id="search-segments" placeholder="Cari segmen berdasarkan nama atau kode..."
+                    class="w-full border border-gray-200 rounded-xl shadow-sm py-2.5 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <i class="fa-solid fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+
+            <button id="clear-search" class="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all hidden">
+                <i class="fa-solid fa-times mr-2"></i>Hapus Filter
+            </button>
         </div>
 
         @if (session('success'))
@@ -82,10 +92,8 @@
                                     <img src="{{ Storage::url($segment->image_path) }}" alt="{{ $segment->name }}"
                                         class="w-20 h-20 object-cover border rounded-lg inline-block" />
                                 @else
-                                    <a href="{{ route('segments.qr.show', $segment->id) }}" title="Lihat QR Segmen">
-                                        <img src="https://chart.googleapis.com/chart?chs=120x120&cht=qr&chl={{ urlencode(url('/return/segment/' . $segment->id)) }}"
-                                            alt="Segmen {{ $segment->name }}" class="w-20 h-20 border rounded-lg inline-block" />
-                                    </a>
+                                    <img src="{{ $segment->image_url }}" alt="{{ $segment->name }}"
+                                        class="w-20 h-20 object-cover border rounded-lg inline-block" />
                                 @endif
                             </div>
                         </div>
@@ -94,7 +102,7 @@
                             {{ \Illuminate\Support\Str::limit($segment->description ?? '-', 160) }}</p>
 
                         <div class="mt-4 text-sm text-gray-500">Produk: <span
-                                class="font-semibold text-gray-700">{{ $segment->products->count() }}</span></div>
+                                class="font-semibold text-gray-700">{{ $segment->getTotalProductCount() }}</span></div>
                     </div>
 
                     <div class="mt-4 flex items-center justify-between gap-3">
@@ -311,6 +319,61 @@
                     }
                 });
             });
+
+            // Filter segments
+            const searchInput = document.getElementById('search-segments');
+            const clearBtn = document.getElementById('clear-search');
+            const segmentCards = document.querySelectorAll('.segment-card');
+            const noResultsDiv = document.getElementById('no-filter-results');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase().trim();
+                    let visibleCount = 0;
+
+                    segmentCards.forEach(card => {
+                        const name = card.dataset.name || '';
+                        const code = card.dataset.code || '';
+
+                        if (name.includes(searchTerm) || code.includes(searchTerm)) {
+                            card.style.display = '';
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    // Show/hide clear button
+                    if (searchTerm) {
+                        clearBtn.classList.remove('hidden');
+                    } else {
+                        clearBtn.classList.add('hidden');
+                    }
+
+                    // Handle no results
+                    const grid = document.getElementById('segments-grid');
+                    const existingNoResults = document.getElementById('no-filter-results');
+                    if (existingNoResults) {
+                        existingNoResults.remove();
+                    }
+
+                    if (visibleCount === 0 && searchTerm) {
+                        const noResults = document.createElement('div');
+                        noResults.id = 'no-filter-results';
+                        noResults.className = 'col-span-full text-center py-12 text-gray-500';
+                        noResults.innerHTML = '<i class="fa-solid fa-search text-4xl text-gray-300 mb-3 block"></i><p class="text-lg font-medium">Tidak ada segmen yang cocok dengan pencarian "' + this.value + '"</p>';
+                        grid.parentElement.insertBefore(noResults, grid.nextElementSibling);
+                    }
+                });
+            }
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function() {
+                    searchInput.value = '';
+                    searchInput.dispatchEvent(new Event('input'));
+                    searchInput.focus();
+                });
+            }
         });
     </script>
 @endsection

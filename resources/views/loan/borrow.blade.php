@@ -1,6 +1,6 @@
 @extends('layout')
 
-@section('title', 'Pinjam Barang')
+@section('title', 'Barang Masuk')
 
 @section('content')
     {{-- Success/Error Messages --}}
@@ -36,7 +36,7 @@
 
         <h1
             class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
-            <i class="fa-solid fa-shopping-cart mr-3"></i>Pinjam Barang
+            <i class="fa-solid fa-shopping-cart mr-3"></i>Barang Masuk
         </h1>
 
         {{-- Cart Section --}}
@@ -195,7 +195,7 @@
                             <input type="radio" name="borrow-type" value="temporary" checked
                                 class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
                             <div class="ml-3 flex-1">
-                                <span class="font-semibold text-gray-800">Pinjaman Sementara</span>
+                                <span class="font-semibold text-gray-800">Barang Sementara</span>
                                 <p class="text-xs text-gray-500">Barang akan dikembalikan sesuai durasi</p>
                             </div>
                         </label>
@@ -204,7 +204,7 @@
                             <input type="radio" name="borrow-type" value="permanent"
                                 class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
                             <div class="ml-3 flex-1">
-                                <span class="font-semibold text-gray-800">Pinjaman Permanen</span>
+                                <span class="font-semibold text-gray-800">Barang Permanen</span>
                                 <p class="text-xs text-gray-500">Barang tidak perlu dikembalikan</p>
                             </div>
                         </label>
@@ -812,11 +812,14 @@
                     const j = await res.json();
                     if (j.success) {
                         const product = j.product;
-                        if (product.stock <= 0) {
+
+                        // Use available_stock (considers reserved and boxes) as the canonical available quantity
+                        const avail = (typeof product.available_stock !== 'undefined') ? parseInt(product.available_stock || '0', 10) : (parseInt(product.stock || '0', 10) || 0);
+                        if (avail <= 0) {
                             showNotification('Produk ini stoknya habis!', 'error');
                             return;
                         }
-                        addToCart({ id: product.id, name: product.name, stock: product.stock });
+                        addToCart({ id: product.id, name: product.name, stock: avail });
                         showNotification(`${product.name} ditambahkan ke keranjang dari QR!`);
                     } else {
                         showNotification('Produk tidak ditemukan!', 'error');
@@ -860,7 +863,7 @@
                         row.className = 'flex items-center gap-3 p-3 rounded-lg border border-gray-100';
                         row.innerHTML = `
                             <div class="flex items-center">
-                                <input type="checkbox" data-id="${p.id}" data-max="${max}" id="box-prod-${p.id}" class="box-prod-checkbox w-6 h-6 accent-indigo-600 border border-gray-200 rounded-md" checked />
+                                <input type="checkbox" data-id="${p.id}" data-max="${max}" id="box-prod-${p.id}" class="box-prod-checkbox w-6 h-6 accent-indigo-600 border border-gray-200 rounded-md" />
                                 <div class="flex-1 min-w-0 ml-3">
                                     <label for="box-prod-${p.id}" class="font-medium text-sm text-gray-800 cursor-pointer">${p.name}</label>
                                     <div class="text-xs text-gray-500">SKU: ${p.id} • Tersedia: ${displayCount}</div>
@@ -871,6 +874,15 @@
                         boxProductsList.appendChild(row);
                     });
                 }
+
+                // Ensure all checkboxes are explicitly unchecked
+                setTimeout(() => {
+                    const allCheckboxes = boxProductsList.querySelectorAll('.box-prod-checkbox');
+                    allCheckboxes.forEach(cb => {
+                        cb.checked = false;
+                    });
+                    console.debug('All checkboxes explicitly unchecked after modal render');
+                }, 10);
 
                 boxProductsModal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
@@ -911,16 +923,26 @@
 
                     // determine available stock: prefer server product.stock, fallback to box data-max
                     const serverProduct = res.product;
-                    let serverStock = 0;
-                    if (serverProduct && typeof serverProduct.stock !== 'undefined') {
-                        serverStock = parseInt(serverProduct.stock || '0', 10) || 0;
+                    let serverAvailable = 0;
+                    if (serverProduct && typeof serverProduct.available_stock !== 'undefined') {
+                        serverAvailable = parseInt(serverProduct.available_stock || '0', 10) || 0;
+                    } else if (serverProduct && typeof serverProduct.stock !== 'undefined') {
+                        serverAvailable = parseInt(serverProduct.stock || '0', 10) || 0;
                     }
 
                     let boxMax = 0;
                     if (qtyInput) boxMax = parseInt(qtyInput.getAttribute('data-max') || '0', 10) || 0;
                     if (!boxMax) boxMax = parseInt(cb.getAttribute('data-max') || cb.dataset.max || '0', 10) || 0;
 
-                    const finalMax = serverStock || boxMax || chosenQty;
+                    // Final max should not exceed what's available globally nor what's in this box.
+                    let finalMax = 0;
+                    if (boxMax > 0 && serverAvailable > 0) {
+                        finalMax = Math.min(boxMax, serverAvailable);
+                    } else if (boxMax > 0) {
+                        finalMax = boxMax;
+                    } else {
+                        finalMax = serverAvailable || chosenQty;
+                    }
 
                     // label
                     const label = cb.nextElementSibling?.querySelector('label')?.textContent || 'Produk';
