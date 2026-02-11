@@ -117,7 +117,7 @@
                                 <div class="flex items-start gap-4">
                                     <div class="flex-1">
                                         <h3 class="font-bold text-gray-800 mb-2">
-                                            {{ $loan->products->first()->name }}
+                                            {{ optional($loan->products->first())->name ?? 'Item Terhapus' }}
                                             @if($loan->products->count() > 1)
                                                 <span class="text-xs text-gray-500">+{{ $loan->products->count() - 1 }} lainnya</span>
                                             @endif
@@ -127,7 +127,7 @@
                                                 <span class="font-semibold">No. Pinjaman:</span> {{ $loan->invoice_number }}
                                             </div>
                                             <div>
-                                                <span class="font-semibold">Peminjam:</span> {{ $loan->user->name }}
+                                                <span class="font-semibold">Peminjam:</span> {{ $loan->user->name ?? 'User Terhapus' }}
                                             </div>
                                             <div>
                                                 <span class="font-semibold">Jumlah Item:</span>
@@ -200,7 +200,7 @@
                         <div class="flex flex-col gap-4">
                             <div class="flex-1">
                                 <h3 class="font-bold text-gray-800 mb-2">
-                                    {{ $loan->products->first()->name }}
+                                    {{ optional($loan->products->first())->name ?? 'Item Terhapus' }}
                                     @if($loan->products->count() > 1)
                                         <span class="text-xs text-gray-500">+{{ $loan->products->count() - 1 }} lainnya</span>
                                     @endif
@@ -210,7 +210,7 @@
                                         <span class="font-semibold">No. Pinjaman:</span> {{ $loan->invoice_number }}
                                     </div>
                                     <div>
-                                        <span class="font-semibold">Peminjam:</span> {{ $loan->user->name }}
+                                        <span class="font-semibold">Peminjam:</span> {{ $loan->user->name ?? 'User Terhapus' }}
                                     </div>
                                     <div>
                                         <span class="font-semibold">Jumlah Item:</span>
@@ -231,21 +231,43 @@
                                 </div>
                             </div>
 
-                            {{-- Confirm Return Form --}}
                             <form action="{{ route('admin.loans.confirm-return', $loan->id) }}" method="POST" class="border-t pt-4">
                                 @csrf
                                 <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fa-solid fa-clipboard-check mr-2"></i>Kondisi Barang
-                                        </label>
-                                        <select name="condition_on_return" required
-                                            class="block w-full border border-gray-200 rounded-xl shadow-sm py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                            <option value="good">Baik (Tidak ada kerusakan)</option>
-                                            <option value="damaged">Rusak (Ada kerusakan)</option>
-                                            <option value="lost">Hilang</option>
-                                        </select>
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <h4 class="font-semibold text-gray-700 mb-3">Detail Pengembalian Barang</h4>
+                                        <div class="space-y-4">
+                                            @foreach($loan->products as $p)
+                                                <div class="border-b border-gray-200 pb-3 last:border-0 last:pb-0 product-return-row" data-total="{{ $p->pivot->quantity }}">
+                                                    <div class="flex justify-between items-center mb-2">
+                                                        <span class="font-medium text-gray-800">{{ $p->name }}</span>
+                                                        <span class="text-sm text-gray-500">Dipinjam: {{ $p->pivot->quantity }}</span>
+                                                    </div>
+                                                    <div class="grid grid-cols-3 gap-3">
+                                                        <div>
+                                                            <label class="block text-xs text-gray-500 mb-1">Baik</label>
+                                                            <input type="number" name="products[{{ $p->id }}][good]" 
+                                                                min="0" max="{{ $p->pivot->quantity }}" value="{{ $p->pivot->quantity }}" required
+                                                                class="w-full border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500 return-qty-input">
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-xs text-gray-500 mb-1">Rusak</label>
+                                                            <input type="number" name="products[{{ $p->id }}][damaged]" 
+                                                                min="0" max="{{ $p->pivot->quantity }}" value="0" required
+                                                                class="w-full border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500 return-qty-input">
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-xs text-gray-500 mb-1">Hilang</label>
+                                                            <input type="number" name="products[{{ $p->id }}][lost]" 
+                                                                min="0" max="{{ $p->pivot->quantity }}" value="0" required
+                                                                class="w-full border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500 return-qty-input">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
+
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">
                                             <i class="fa-solid fa-comment-dots mr-2"></i>Catatan (Opsional)
@@ -285,5 +307,31 @@
                 }
             });
         }, 5000);
+
+        // Dynamic validation for return quantities
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('return-qty-input')) {
+                const row = e.target.closest('.product-return-row');
+                const max = parseInt(row.dataset.total);
+                const inputs = row.querySelectorAll('.return-qty-input');
+                
+                let currentSum = 0;
+                inputs.forEach(input => currentSum += parseInt(input.value || 0));
+
+                if (currentSum > max) {
+                    // Prevent value increase by resetting to what fits
+                    // Calculate how much exceeding
+                    const excess = currentSum - max;
+                    // Subtract excess from the current input
+                    e.target.value = parseInt(e.target.value) - excess;
+                    
+                    // Visual feedback
+                    e.target.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+                    setTimeout(() => {
+                        e.target.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
+                    }, 500);
+                }
+            }
+        });
     </script>
 @endsection

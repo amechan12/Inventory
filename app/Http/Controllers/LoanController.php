@@ -186,9 +186,8 @@ class LoanController extends Controller
                 'price_per_item' => 0, // Tidak ada harga untuk pinjaman
             ]);
 
-            // Reserve stock untuk semua jenis peminjaman (temporary dan permanent)
-            // Stock akan dipotong permanen saat admin approve permanent borrow
-            $product->increment('reserved_stock', $quantity);
+            // IMMEDIATELY deduct stock when user submits borrow (no need to wait for admin approval)
+            $product->consumeForApproval($quantity);
 
             DB::commit();
 
@@ -271,10 +270,24 @@ class LoanController extends Controller
                 ->where('status', 'pending')
                 ->firstOrFail();
 
-            // Kembalikan reserved_stock ke stok normal
+            // Restore stock back to boxes or global (reverse of consumeForApproval)
             foreach ($transaction->products as $product) {
                 $quantity = $product->pivot->quantity;
-                $product->decrement('reserved_stock', $quantity);
+                $productModel = Product::with('boxes')->find($product->id);
+                
+                if ($productModel) {
+                    // Check if product is in a box
+                    $box = $productModel->boxes->first();
+                    
+                    if ($box) {
+                        // If in box, restore to box pivot
+                        $currentQty = $box->pivot->quantity;
+                        $productModel->boxes()->updateExistingPivot($box->id, ['quantity' => $currentQty + $quantity]);
+                    }
+                    
+                    // ALWAYS restore to global stock
+                    $productModel->increment('stock', $quantity);
+                }
             }
 
             // Hapus transaksi

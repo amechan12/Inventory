@@ -104,7 +104,7 @@ class SegmentController extends Controller
         $segmentId = $this->verifySegmentReturnToken($token);
         
         if (!$segmentId) {
-            return redirect()->route('home')->with('error', 'Link pengembalian tidak valid atau telah kadaluarsa. Silakan scan QR code yang benar.');
+            return redirect()->route('loan.return')->with('error', 'Link pengembalian tidak valid atau telah kadaluarsa. Silakan scan QR code yang benar.');
         }
 
         $segment = Segment::findOrFail($segmentId);

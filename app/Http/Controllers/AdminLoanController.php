@@ -51,47 +51,11 @@ class AdminLoanController extends Controller
                 ->with('products')
                 ->firstOrFail();
 
-            // Check availability for all products in the transaction
-            // Validate by checking if consumeForApproval would succeed for each
-            $insufficient = [];
-            foreach ($transaction->products as $prod) {
-                $qty = (int) ($prod->pivot->quantity ?? 1);
-                $productModel = Product::with('boxes')->findOrFail($prod->id);
-
-                // Check if consumeForApproval will succeed
-                $boxQty = $productModel->getTotalQuantityInBoxes();
-                if ($boxQty > 0) {
-                    // Product is in boxes; check total box quantity
-                    if ($boxQty < $qty) {
-                        $insufficient[] = "{$productModel->name} (dibutuhkan {$qty}, tersedia di kotak {$boxQty})";
-                    }
-                } else {
-                    // Product is not in any box; check product.stock
-                    if ($productModel->stock < $qty) {
-                        $insufficient[] = "{$productModel->name} (dibutuhkan {$qty}, stok fisik {$productModel->stock})";
-                    }
-                }
-            }
-
-            if (count($insufficient) > 0) {
-                throw new \Exception('Stok tidak mencukupi untuk: ' . implode('; ', $insufficient));
-            }
+            // Stock is already deducted in submitBorrow, so no need to validate here
 
             DB::beginTransaction();
 
-            // All good -> apply changes for every product in this transaction
-            // Use Product::consumeForApproval to deduct from box pivots when applicable,
-            // otherwise deduct from product.stock. Then clear reserved_stock.
-            foreach ($transaction->products as $prod) {
-                $qty = $prod->pivot->quantity ?? 1;
-                $productModel = Product::with('boxes')->findOrFail($prod->id);
-
-                // Attempt to consume quantity (will throw if insufficient)
-                $productModel->consumeForApproval((int) $qty);
-
-                // Clear reservation
-                $productModel->decrement('reserved_stock', $qty);
-            }
+            // Stock is already deducted in submitBorrow, so we only need to change the status here
 
             // Check if this is a permanent borrow (duration = 0)
             $isPermanent = $transaction->duration == 0;
@@ -237,7 +201,10 @@ class AdminLoanController extends Controller
     public function confirmReturn(Request $request, $id)
     {
         $request->validate([
-            'condition_on_return' => 'required|in:good,damaged,lost',
+            'products' => 'required|array',
+            'products.*.good' => 'required|integer|min:0',
+            'products.*.damaged' => 'required|integer|min:0',
+            'products.*.lost' => 'required|integer|min:0',
             'return_notes' => 'nullable|string|max:500',
         ]);
 
@@ -246,35 +213,71 @@ class AdminLoanController extends Controller
 
             $transaction = Transaction::where('id', $id)
                 ->where('status', 'returning')
+                ->with('products')
                 ->firstOrFail();
 
+            // Validate total quantities match borrowed amount
+            foreach ($transaction->products as $prod) {
+                $borrowedQty = $prod->pivot->quantity;
+                $input = $request->products[$prod->id] ?? null;
+                
+                if (!$input) {
+                    throw new \Exception("Data pengembalian tidak lengkap untuk produk {$prod->name}");
+                }
+
+                $totalReturned = $input['good'] + $input['damaged'] + $input['lost'];
+                
+                if ($totalReturned != $borrowedQty) {
+                    throw new \Exception("Jumlah pengembalian untuk {$prod->name} tidak sesuai (Dipinjam: {$borrowedQty}, Diinput: {$totalReturned})");
+                }
+            }
+
             // Ubah status menjadi returned
+            // Note: Since we now have detailed condition per product, we might set a general 'condition_on_return' 
+            // based on whether there are any damaged/lost items.
+            $hasDamaged = collect($request->products)->sum('damaged') > 0;
+            $hasLost = collect($request->products)->sum('lost') > 0;
+            
+            $generalCondition = 'good';
+            if ($hasLost) $generalCondition = 'lost';
+            elseif ($hasDamaged) $generalCondition = 'damaged';
+
             $transaction->update([
                 'status' => 'returned',
                 'return_date' => Carbon::now(),
-                'condition_on_return' => $request->condition_on_return,
+                'condition_on_return' => $generalCondition, 
                 'return_notes' => $request->return_notes,
             ]);
 
-            // Kembalikan stock hanya jika kondisi good atau damaged (lost tidak dikembalikan)
-            if ($request->condition_on_return !== 'lost') {
-                foreach ($transaction->products as $prod) {
-                    $qty = $prod->pivot->quantity ?? 1;
-                    $productModel = Product::find($prod->id);
+            // Restore stock logic
+            foreach ($transaction->products as $prod) {
+                $input = $request->products[$prod->id];
+                // Only restore Good and Damaged items. Lost items are gone.
+                $qtyToRestore = $input['good'] + $input['damaged'];
+                
+                if ($qtyToRestore > 0) {
+                    $productModel = Product::with('boxes')->find($prod->id);
+                    
                     if ($productModel) {
-                        $productModel->increment('stock', $qty);
+                        // Check if product is in a box
+                        $box = $productModel->boxes->first();
+                        
+                        if ($box) {
+                            // If in box, restore to box pivot
+                            $currentQty = $box->pivot->quantity;
+                            $productModel->boxes()->updateExistingPivot($box->id, ['quantity' => $currentQty + $qtyToRestore]);
+                        }
+                        
+                        // ALWAYS restore to global stock
+                        $productModel->increment('stock', $qtyToRestore);
                     }
                 }
             }
 
             DB::commit();
 
-            $message = $request->condition_on_return === 'lost'
-                ? 'Pengembalian dikonfirmasi. Barang hilang, stok tidak dikembalikan.'
-                : 'Pengembalian dikonfirmasi. Stok barang dikembalikan.';
-
             return redirect()->route('admin.loans')
-                ->with('success', $message);
+                ->with('success', 'Pengembalian berhasil dikonfirmasi.');
 
         } catch (\Exception $e) {
             DB::rollBack();

@@ -66,6 +66,9 @@ class Product extends Model
             if ($remaining > 0) {
                 throw new \Exception('Stok di kotak tidak mencukupi untuk mengurangi ' . $qty . ' unit');
             }
+            
+            // Also deduct from global stock
+            $this->decrement('stock', $qty);
         } else {
             // Not in any box, use product.stock
             if ($this->stock < $qty) {

@@ -149,62 +149,108 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             @forelse ($products as $product)
                 <div
-                    class="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col">
-                    <div
-                        class="w-full aspect-square bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
-                        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                    class="group bg-white rounded-3xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-500 border-2 border-transparent hover:border-indigo-200 flex flex-col transform hover:-translate-y-1">
+                    {{-- Product Image with Gradient Overlay --}}
+                    <div class="relative w-full aspect-[4/3] overflow-hidden">
+                        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" 
+                            class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                        
+                        {{-- Gradient Overlay --}}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
+                        {{-- Stock Badge --}}
                         @php $avail = $product->available_stock; @endphp
                         @if ($avail <= 1)
-                            <div
-                                class="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
+                            <div class="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-rose-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg backdrop-blur-sm flex items-center gap-2 animate-pulse">
+                                <i class="fa-solid fa-exclamation-triangle"></i>
                                 @if ($avail == 0)
-                                    Kosong
+                                    Habis
                                 @else
                                     Sisa {{ $avail }}
                                 @endif
                             </div>
                         @else
-                            <div
-                                class="absolute top-3 left-3 bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
-                                Tersedia {{ $avail }}
+                            <div class="absolute top-4 right-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg backdrop-blur-sm flex items-center gap-2">
+                                <i class="fa-solid fa-check-circle"></i>
+                                <span>{{ $avail }}</span>
+                            </div>
+                        @endif
+
+                        {{-- Category Badge --}}
+                        @if($product->category)
+                            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-indigo-700 px-3 py-1.5 rounded-full text-xs font-bold shadow-md border border-indigo-100 flex items-center gap-1">
+                                <i class="fa-solid fa-tag"></i>
+                                <span>{{ $product->category }}</span>
                             </div>
                         @endif
                     </div>
 
-                    <div class="p-4 flex-1 flex flex-col">
-                        <h3 class="text-lg font-bold text-gray-800 line-clamp-2 mb-2">{{ $product->name }}</h3>
+                    {{-- Card Content --}}
+                    <div class="p-5 flex-1 flex flex-col">
+                        {{-- Product Name --}}
+                        <h3 class="text-xl font-bold text-gray-900 line-clamp-2 mb-3 group-hover:text-indigo-600 transition-colors duration-300">
+                            {{ $product->name }}
+                        </h3>
 
-                        <div class="flex justify-between items-center mb-4 text-sm">
-                            @if($product->category)
-                                <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-medium">{{ $product->category }}</span>
+                        {{-- Stock Info Row --}}
+                        <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+                            <div class="flex items-center gap-2 text-sm">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
+                                    <i class="fa-solid fa-cubes text-indigo-600 text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-500 font-medium">Stok Tersedia</p>
+                                    <p class="font-bold {{ $avail > 5 ? 'text-emerald-600' : ($avail > 0 ? 'text-orange-500' : 'text-red-500') }}">
+                                        {{ $avail }} Unit
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            {{-- Quick Status Indicator --}}
+                            @if($avail > 5)
+                                <span class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-semibold flex items-center gap-1">
+                                    <i class="fa-solid fa-circle text-emerald-500" style="font-size: 6px;"></i>
+                                    Ready
+                                </span>
+                            @elseif($avail > 0)
+                                <span class="text-xs bg-orange-50 text-orange-700 px-3 py-1 rounded-full font-semibold flex items-center gap-1">
+                                    <i class="fa-solid fa-circle text-orange-500" style="font-size: 6px;"></i>
+                                    Terbatas
+                                </span>
+                            @else
+                                <span class="text-xs bg-red-50 text-red-700 px-3 py-1 rounded-full font-semibold flex items-center gap-1">
+                                    <i class="fa-solid fa-circle text-red-500" style="font-size: 6px;"></i>
+                                    Kosong
+                                </span>
                             @endif
-                            <p class="font-semibold {{ $avail > 5 ? 'text-gray-500' : ($avail > 0 ? 'text-orange-500' : 'text-red-500') }}">
-                                Stok: {{ $avail }}
-                            </p>
                         </div>
 
                         {{-- Box Info --}}
                         @if($product->boxes->count() > 0)
-                            <div class="mb-4 text-xs bg-purple-50 border border-purple-200 rounded-lg p-2">
-                                <p class="text-purple-700 font-medium">
-                                    <i class="fa-solid fa-box mr-1"></i>
-                                    @foreach($product->boxes as $box)
-                                        @if($loop->count > 1)
-                                            {{ $box->name }}{{ !$loop->last ? ',' : '' }}
-                                        @else
-                                            {{ $box->name }}
-                                        @endif
-                                    @endforeach
+                            <div class="mb-4 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-3">
+                                <p class="text-xs text-purple-700 font-semibold flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-md bg-purple-200 flex items-center justify-center">
+                                        <i class="fa-solid fa-box text-purple-600 text-xs"></i>
+                                    </div>
+                                    <span class="flex-1 truncate">
+                                        @foreach($product->boxes as $box)
+                                            @if($loop->count > 1)
+                                                {{ $box->name }}{{ !$loop->last ? ', ' : '' }}
+                                            @else
+                                                {{ $box->name }}
+                                            @endif
+                                        @endforeach
+                                    </span>
                                 </p>
                             </div>
                         @endif
 
                         {{-- Action Button --}}
                         <a href="{{ route('loan.borrow') }}"
-                            class="mt-auto w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-center py-2.5 px-3 rounded-xl hover:shadow-md transition-all font-medium {{ $avail == 0 ? 'opacity-50 cursor-not-allowed' : '' }}"
+                            class="mt-auto w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white text-center py-3.5 px-4 rounded-xl hover:shadow-xl transition-all duration-500 font-bold text-sm flex items-center justify-center gap-2 group {{ $avail == 0 ? 'opacity-50 cursor-not-allowed grayscale' : '' }}"
                             {{ $avail == 0 ? 'onclick="return false;"' : '' }}>
-                            <i class="fa-solid fa-plus-circle mr-1"></i>Pinjam
+                            <i class="fa-solid fa-arrow-right-to-bracket group-hover:translate-x-1 transition-transform duration-300"></i>
+                            <span>{{ $avail == 0 ? 'Tidak Tersedia' : 'Pinjam Sekarang' }}</span>
                         </a>
                     </div>
                 </div>
@@ -229,6 +275,21 @@
             </div>
         @endif
     </div>
+
+    <style>
+        /* Custom utilities for gradient button animation */
+        .bg-size-200 {
+            background-size: 200% auto;
+        }
+        
+        .bg-pos-0 {
+            background-position: 0% center;
+        }
+        
+        .bg-pos-100 {
+            background-position: 100% center;
+        }
+    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
